@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@300;400;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-logo {
+  font-family: 'Montserrat Alternates', system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.25em; /* ajusta si quieres más/menos separado */
+}
+
+.container-platix {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Alto Croacia Brand Colors */
+    --brand-charcoal: 215 18% 7%;
+    --brand-coral: 0 82% 70%;
+    --brand-coral-light: 0 82% 77%;
+    --brand-coral-dark: 0 82% 63%;
+    --brand-amber: 38 96% 51%;
+    --brand-green: 145 61% 20%;
+    
+    /* Base colors for dark theme */
+    --background: 217 22% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 217 20% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 217 22% 6%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 0 82% 70%;
+    --primary-foreground: 215 18% 7%;
+
+    --secondary: 217 16% 12%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 16% 12%;
+    --muted-foreground: 215 16% 58%;
+
+    --accent: 38 96% 51%;
+    --accent-foreground: 215 18% 7%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 215 16% 14%;
+    --input: 215 16% 14%;
+    --ring: 0 82% 70%;
+
+    --radius: 1rem;
+
+    /* Custom design tokens */
+    --overlay-dark: 215 18% 7% / 0.7;
+    --overlay-darker: 215 18% 7% / 0.85;
+    --shadow-glow: 0 82% 70% / 0.15;
+    --shadow-ambient: 215 18% 2% / 0.4;
+  }
+}
+
+/* Smooth transitions */
+@layer utilities {
+  .transition-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hover-lift {
+    @apply hover:-translate-y-1 hover:shadow-2xl transition-smooth;
+  }
+  
+  .backdrop-glass {
+    @apply backdrop-blur-md bg-card/90;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}

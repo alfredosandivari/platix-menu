@@ -1,0 +1,294 @@
+{
+  "categories": [
+    { "id": "entradas", "label": "Entradas" },
+    { "id": "principales", "label": "Principales" },
+    { "id": "sushi", "label": "Sushi & Especialidades" },
+    { "id": "postres", "label": "Postres" },
+    { "id": "clasicos", "label": "Coctelería Clásica" },
+    { "id": "autor", "label": "Coctelería de Autor" },
+    { "id": "sin-alcohol", "label": "Sin Alcohol" },
+    { "id": "vinos", "label": "Vinos" },
+    { "id": "cervezas", "label": "Cervezas" }
+  ],
+  "items": [
+    {
+      "id": "burrata",
+      "name": "Burrata con Tomates Confitados",
+      "category": "entradas",
+      "desc": "Burrata cremosa, tomates cherry confitados, reducción de balsámico, aceite de albahaca y pan focaccia.",
+      "price": 7800,
+      "tags": ["🥬"],
+      "popular": true
+    },
+    {
+      "id": "ceviche",
+      "name": "Ceviche de Pescado Blanco",
+      "category": "entradas",
+      "desc": "Pescado del día marinado en leche de tigre, camote, maíz cancha y cilantro fresco.",
+      "price": 8200,
+      "tags": ["🌶️"],
+      "popular": true
+    },
+    {
+      "id": "tartar",
+      "name": "Tartar de Atún Rojo",
+      "category": "entradas",
+      "desc": "Atún rojo de primera, aguacate, sésamo, salsa ponzu y chips de wonton.",
+      "price": 9500,
+      "tags": [],
+      "popular": false
+    },
+    {
+      "id": "pulpo",
+      "name": "Pulpo a la Parrilla",
+      "category": "principales",
+      "desc": "Pulpo español, papas confitadas, pimentón ahumado y chimichurri de perejil.",
+      "price": 12800,
+      "tags": [],
+      "popular": true
+    },
+    {
+      "id": "rib-eye",
+      "name": "Rib Eye 400g",
+      "category": "principales",
+      "desc": "Corte premium de 400g, cocción a punto, acompañado de papas rústicas y vegetales grillados.",
+      "price": 16500,
+      "tags": [],
+      "popular": true
+    },
+    {
+      "id": "risotto",
+      "name": "Risotto de Hongos y Trufa",
+      "category": "principales",
+      "desc": "Risotto cremoso con hongos silvestres, aceite de trufa negra y parmesano reggiano.",
+      "price": 9800,
+      "tags": ["🥬"],
+      "popular": false
+    },
+    {
+      "id": "salmon",
+      "name": "Salmón Glaseado",
+      "category": "principales",
+      "desc": "Filete de salmón con glaseado de miel y soja, quinoa tricolor y espárragos.",
+      "price": 11900,
+      "tags": [],
+      "popular": false
+    },
+    {
+      "id": "roll-salmon",
+      "name": "Roll de Salmón AC",
+      "category": "sushi",
+      "desc": "Salmón fresco, palta, queso crema, topping de sésamo y salsa anguila.",
+      "price": 8600,
+      "tags": ["🍣"],
+      "popular": true
+    },
+    {
+      "id": "roll-langostinos",
+      "name": "Roll de Langostinos Tempura",
+      "category": "sushi",
+      "desc": "Langostinos en tempura, palta, pepino, mayonesa picante y tobiko.",
+      "price": 9400,
+      "tags": ["🍣", "🌶️"],
+      "popular": true
+    },
+    {
+      "id": "sashimi",
+      "name": "Sashimi Premium (12 piezas)",
+      "category": "sushi",
+      "desc": "Selección de salmón, atún y pez mantequilla con salsas signature.",
+      "price": 11200,
+      "tags": ["🍣"],
+      "popular": false
+    },
+    {
+      "id": "tiradito",
+      "name": "Tiradito Nikkei",
+      "category": "sushi",
+      "desc": "Finas láminas de pescado blanco con leche de tigre amarilla y crispy de ajo.",
+      "price": 8800,
+      "tags": ["🍣", "🌶️"],
+      "popular": false
+    },
+    {
+      "id": "brownie",
+      "name": "Brownie de Chocolate Belga",
+      "category": "postres",
+      "desc": "Brownie tibio con helado de vainilla, salsa de chocolate y frutos rojos.",
+      "price": 4200,
+      "tags": [],
+      "popular": true
+    },
+    {
+      "id": "cheesecake",
+      "name": "Cheesecake de Frutos Rojos",
+      "category": "postres",
+      "desc": "Cheesecake cremoso con coulis de frutos del bosque y crema chantilly.",
+      "price": 4500,
+      "tags": [],
+      "popular": false
+    },
+    {
+      "id": "panna-cotta",
+      "name": "Panna Cotta de Maracuyá",
+      "category": "postres",
+      "desc": "Delicada panna cotta con reducción de maracuyá y menta fresca.",
+      "price": 3900,
+      "tags": [],
+      "popular": false
+    },
+    {
+      "id": "negroni",
+      "name": "Negroni",
+      "category": "clasicos",
+      "desc": "Gin premium, Campari, Vermouth rosso. Amargo y perfectamente balanceado.",
+      "price": 5200,
+      "tags": ["🍸"],
+      "popular": true
+    },
+    {
+      "id": "old-fashioned",
+      "name": "Old Fashioned",
+      "category": "clasicos",
+      "desc": "Bourbon, bitter de angostura, azúcar, twist de naranja. Clásico atemporal.",
+      "price": 5400,
+      "tags": ["🍸"],
+      "popular": true
+    },
+    {
+      "id": "espresso-martini",
+      "name": "Espresso Martini",
+      "category": "clasicos",
+      "desc": "Vodka, licor de café, espresso recién hecho. Energía y sofisticación.",
+      "price": 5600,
+      "tags": ["🍸"],
+      "popular": true
+    },
+    {
+      "id": "mojito",
+      "name": "Mojito Clásico",
+      "category": "clasicos",
+      "desc": "Ron blanco, menta fresca, lima, azúcar, soda. Refrescante y equilibrado.",
+      "price": 4800,
+      "tags": ["🍸"],
+      "popular": false
+    },
+    {
+      "id": "ac-signature",
+      "name": "AC Signature",
+      "category": "autor",
+      "desc": "Gin infusionado con pepino, elderflower, lima, tónica premium y flor comestible.",
+      "price": 6200,
+      "tags": ["🍸"],
+      "popular": true
+    },
+    {
+      "id": "passion-kiss",
+      "name": "Passion Kiss",
+      "category": "autor",
+      "desc": "Vodka, maracuyá fresco, champagne rosé, jugo de lima y miel de romero.",
+      "price": 6400,
+      "tags": ["🍸"],
+      "popular": true
+    },
+    {
+      "id": "smoky-manhattan",
+      "name": "Smoky Manhattan",
+      "category": "autor",
+      "desc": "Whisky ahumado, vermouth tinto, bitter aromático, servido en copa ahumada.",
+      "price": 6800,
+      "tags": ["🍸"],
+      "popular": false
+    },
+    {
+      "id": "tropical-sunset",
+      "name": "Tropical Sunset",
+      "category": "autor",
+      "desc": "Ron añejo, mango, coco, lima, bitter de cardamomo y twist de jengibre.",
+      "price": 5900,
+      "tags": ["🍸"],
+      "popular": false
+    },
+    {
+      "id": "virgin-mojito",
+      "name": "Virgin Mojito",
+      "category": "sin-alcohol",
+      "desc": "Menta fresca, lima, azúcar de caña y soda. Refrescante y natural.",
+      "price": 3200,
+      "tags": [],
+      "popular": true
+    },
+    {
+      "id": "limonada-jengibre",
+      "name": "Limonada de Jengibre y Menta",
+      "category": "sin-alcohol",
+      "desc": "Limón exprimido, jengibre fresco, menta y jarabe de agave.",
+      "price": 3400,
+      "tags": [],
+      "popular": false
+    },
+    {
+      "id": "frutas-del-bosque",
+      "name": "Frutas del Bosque Fizz",
+      "category": "sin-alcohol",
+      "desc": "Mix de berries frescos, lima, miel y agua con gas.",
+      "price": 3600,
+      "tags": [],
+      "popular": false
+    },
+    {
+      "id": "malbec-reserva",
+      "name": "Malbec Reserva - Rutini",
+      "category": "vinos",
+      "desc": "Mendoza, Argentina. Cuerpo completo, notas a ciruela y vainilla. Copa/Botella.",
+      "price": 4800,
+      "tags": ["🍷"],
+      "popular": true
+    },
+    {
+      "id": "chardonnay",
+      "name": "Chardonnay - Luigi Bosca",
+      "category": "vinos",
+      "desc": "Mendoza, Argentina. Fresco y frutal, notas cítricas. Copa/Botella.",
+      "price": 4200,
+      "tags": ["🍷"],
+      "popular": false
+    },
+    {
+      "id": "cabernet",
+      "name": "Cabernet Sauvignon - Catena Zapata",
+      "category": "vinos",
+      "desc": "Mendoza, Argentina. Elegante, taninos suaves, largo final. Copa/Botella.",
+      "price": 5600,
+      "tags": ["🍷"],
+      "popular": false
+    },
+    {
+      "id": "ipa",
+      "name": "IPA Artesanal - Patagonia",
+      "category": "cervezas",
+      "desc": "Cerveza artesanal con notas cítricas y amargor balanceado. 473ml.",
+      "price": 2800,
+      "tags": ["🍺"],
+      "popular": true
+    },
+    {
+      "id": "lager",
+      "name": "Lager Premium - Stella Artois",
+      "category": "cervezas",
+      "desc": "Cerveza belga de cuerpo ligero y sabor refinado. 330ml.",
+      "price": 2400,
+      "tags": ["🍺"],
+      "popular": true
+    },
+    {
+      "id": "stout",
+      "name": "Stout - Antares",
+      "category": "cervezas",
+      "desc": "Cerveza negra con notas a café y chocolate. 473ml.",
+      "price": 3000,
+      "tags": ["🍺"],
+      "popular": false
+    }
+  ]
+}
