@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { getBusinessSlug } from "@/lib/domain";
 import Landing from "@/pages/Landing";
+import LandingLayout from "@/layouts/LandingLayout";
 import Menu from "@/pages/Menu";
 
 export default function BusinessGate() {
@@ -42,7 +43,11 @@ export default function BusinessGate() {
   if (status === "loading") return null;
 
   if (status === "invalid") {
-    return <Landing />;
+    return 
+    <LandingLayout>
+        <Landing />
+    </LandingLayout>
+    ;
   }
 
   return <Menu />;
