@@ -5,40 +5,59 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Menu from "./pages/Menu";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 
 // ADMIN
-import AdminLayout from "./admin/AdminLayout";
-import AdminDashboard from "./admin/AdminDashboard";
-import AdminCategoriesPage from "./admin/AdminCategoriesPage";
-import AdminItemsPage from "./admin/AdminItemsPage";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
+import AdminItemsPage from "./pages/admin/AdminItemsPage";
+
+import { getBusinessSlug } from "@/lib/domain";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+export default function App() {
+  const slug = getBusinessSlug();
+  const isBusiness = Boolean(slug);
 
-        <Routes>
-          {/* PUBLIC */}
-          <Route path="/" element={<Menu />} />
+  return (
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
 
-          {/* ADMIN */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="categories" element={<AdminCategoriesPage />} />
-            <Route path="items" element={<AdminItemsPage />} />
-          </Route>
+          {/* =====================
+              BUSINESS (subdominio)
+          ===================== */}
+          {isBusiness ? (
+            <Routes>
+              {/* MENU */}
+              <Route path="/" element={<Menu />} />
 
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
-);
+              {/* ADMIN */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="categories" element={<AdminCategoriesPage />} />
+                <Route path="items" element={<AdminItemsPage />} />
+              </Route>
 
-export default App;
+              {/* 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          ) : (
+            /* =====================
+                LANDING (root domain)
+            ===================== */
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          )}
+        </TooltipProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
+  );
+}
