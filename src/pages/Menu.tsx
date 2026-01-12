@@ -168,14 +168,16 @@ export default function MenuPage() {
 
   useEffect(() => {
     if (!business) return;
-
+  
     const themeKey = business.theme ?? "dark";
     const theme = THEMES[themeKey];
-
-    const root = document.documentElement;
-    root.style.setProperty("--bg-color", theme.bg);
-    root.style.setProperty("--text-color", theme.text);
-    root.style.setProperty("--primary-color", theme.primary);
+  
+    const menuRoot = document.querySelector(".menu-root") as HTMLElement | null;
+    if (!menuRoot) return;
+  
+    menuRoot.style.setProperty("--background", theme.bg);
+    menuRoot.style.setProperty("--foreground", theme.text);
+    menuRoot.style.setProperty("--primary", theme.primary);
   }, [business]);
 
   /* =====================
