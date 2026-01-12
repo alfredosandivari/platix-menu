@@ -88,78 +88,104 @@ export default function MenuPage() {
     };
 
   /* =====================
-     FETCH DATA
+     FETCH MENU (REUTILIZABLE)
+  ===================== */
+
+  const fetchMenu = async () => {
+    setLoading(true);
+
+    const slug = getBusinessSlug();
+    if (!slug) {
+      setLoading(false);
+      return;
+    }
+
+    // 1️⃣ Business
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("id, name, logo_url, theme")
+      .eq("slug", slug)
+      .single();
+
+    if (!business) {
+      setLoading(false);
+      return;
+    }
+
+    setBusiness(business);
+
+    // 2️⃣ Categories
+    const { data: catData } = await supabase
+      .from("menu_categories")
+      .select("id, title, position")
+      .eq("business_id", business.id)
+      .order("position");
+
+    if (!catData?.length) {
+      setCategories([]);
+      setLoading(false);
+      setPageReady(true);
+      return;
+    }
+
+    // 3️⃣ Items
+    const categoryIds = catData.map((c) => c.id);
+
+    const { data: itemData } = await supabase
+      .from("menu_items")
+      .select(
+        "id, name, description, price, image_url, available, category_id, position"
+      )
+      .in("category_id", categoryIds)
+      .order("position");
+
+    const formatter = new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+      maximumFractionDigits: 0,
+    });
+
+    const grouped: MenuCategory[] = catData.map((cat) => ({
+      id: cat.id,
+      title: cat.title,
+      items:
+        itemData
+          ?.filter((i) => i.category_id === cat.id)
+          .map((i) => ({
+            id: i.id,
+            name: i.name,
+            description: i.description ?? "",
+            price: formatter.format(i.price ?? 0),
+            image: i.image_url,
+            available: i.available ?? true,
+          })) ?? [],
+    }));
+
+    setCategories(grouped);
+    setActiveCategory(grouped[0]?.id ?? "");
+    setLoading(false);
+    setTimeout(() => setPageReady(true), 50);
+  };
+
+  /* =====================
+     INITIAL LOAD
   ===================== */
 
   useEffect(() => {
-    const fetchMenu = async () => {
-      setLoading(true);
+    fetchMenu();
+  }, []);
 
-      const slug = getBusinessSlug();
-      if (!slug) return;
+  /* =====================
+     FIX OPCIÓN A — REFRESH ON FOCUS
+  ===================== */
 
-      const { data: business } = await supabase
-        .from("businesses")
-        .select("id, name, logo_url, theme")
-        .eq("slug", slug)
-        .single();
-
-      if (!business) return;
-
-      setBusiness(business);
-
-      const { data: catData } = await supabase
-        .from("menu_categories")
-        .select("id, title, position")
-        .eq("business_id", business.id)
-        .order("position");
-
-      if (!catData?.length) {
-        setCategories([]);
-        setLoading(false);
-        setPageReady(true);
-        return;
-      }
-
-      const categoryIds = catData.map((c) => c.id);
-
-      const { data: itemData } = await supabase
-        .from("menu_items")
-        .select(
-          "id, name, description, price, image_url, available, category_id, position"
-        )
-        .in("category_id", categoryIds)
-        .order("position");
-
-      const formatter = new Intl.NumberFormat("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0,
-      });
-
-      const grouped: MenuCategory[] = catData.map((cat) => ({
-        id: cat.id,
-        title: cat.title,
-        items:
-          itemData
-            ?.filter((i) => i.category_id === cat.id)
-            .map((i) => ({
-              id: i.id,
-              name: i.name,
-              description: i.description ?? "",
-              price: formatter.format(i.price ?? 0),
-              image: i.image_url,
-              available: i.available ?? true,
-            })) ?? [],
-      }));
-
-      setCategories(grouped);
-      setActiveCategory(grouped[0]?.id ?? "");
-      setLoading(false);
-      setTimeout(() => setPageReady(true), 50);
+  useEffect(() => {
+    const onFocus = () => {
+      fetchMenu();
     };
 
-    fetchMenu();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
   }, []);
 
   /* =====================
@@ -168,16 +194,14 @@ export default function MenuPage() {
 
   useEffect(() => {
     if (!business) return;
-  
+
     const themeKey = business.theme ?? "dark";
     const theme = THEMES[themeKey];
-  
-    const menuRoot = document.querySelector(".menu-root") as HTMLElement | null;
-    if (!menuRoot) return;
-  
-    menuRoot.style.setProperty("--background", theme.bg);
-    menuRoot.style.setProperty("--foreground", theme.text);
-    menuRoot.style.setProperty("--primary", theme.primary);
+
+    const root = document.documentElement;
+    root.style.setProperty("--bg-color", theme.bg);
+    root.style.setProperty("--text-color", theme.text);
+    root.style.setProperty("--primary-color", theme.primary);
   }, [business]);
 
   /* =====================
@@ -245,10 +269,8 @@ export default function MenuPage() {
       </div>
 
       {/* TABS */}
-      <div
-        className="sticky top-0 z-20 backdrop-blur"
-        style={{ backgroundColor: "var(--bg-color)" }}
-      >
+      <div className="sticky top-0 z-20 backdrop-blur"
+           style={{ backgroundColor: "var(--bg-color)" }}>
         <div className="container-platix flex gap-6 overflow-x-auto py-3">
           {categories.map((cat) => (
             <button
@@ -315,7 +337,7 @@ export default function MenuPage() {
                       }}
                     >
                       <CardHeader>
-                        <CardTitle 
+                        <CardTitle
                           className="text-xl font-semibold"
                           style={{ color: "var(--text-color)" }}
                         >
@@ -340,9 +362,7 @@ export default function MenuPage() {
                           ) : null}
                         </div>
 
-                        <p 
-                          className="text-sm"
-                          style={{ color: "var(--text-color)", opacity: 0.75 }}>
+                        <p className="text-sm opacity-75 mb-2">
                           {item.description}
                         </p>
 
