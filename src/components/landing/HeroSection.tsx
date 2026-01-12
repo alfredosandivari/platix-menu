@@ -63,10 +63,20 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Button variant="hero" size="lg">
-              Start Free Trial
-              <ArrowRight className="w-5 h-5" />
-            </Button>
+            <Button
+            asChild
+            variant="outline"
+            size="lg"
+          >
+            <a
+              href="https://demo.platix.app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Live Demo
+            </a>
+          </Button>
+
             <span className="text-sm text-muted-foreground">
               No credit card required - Cancel anytime
             </span>
