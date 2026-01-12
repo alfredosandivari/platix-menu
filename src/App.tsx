@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Menu from "./pages/Menu";
 import Landing from "./pages/Landing";
+import LandingLayout from "@/layouts/LandingLayout";
 import NotFound from "./pages/NotFound";
 
 // ADMIN
@@ -56,11 +57,14 @@ export default function App() {
                 LANDING (root domain)
             ===================== */
             <Routes>
-              <Route path="/" element={
-                <div className="landing-root">
-                  <Landing />
-                </div>
-                } />
+              <Route
+                path="/"
+                element={
+                  <LandingLayout>
+                    <Landing />
+                  </LandingLayout>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
           )}
