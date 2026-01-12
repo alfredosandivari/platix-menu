@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================
+   LANDING ROOT TOKENS
+============================ */
+@layer base {
+  .landing-root {
+    /* Platix Orange Theme */
+    --background: 0 0% 100%;
+    --foreground: 220 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+
+    /* Primary Orange */
+    --primary: 18 100% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Warm Gray Secondary */
+    --secondary: 30 10% 96%;
+    --secondary-foreground: 220 15% 25%;
+
+    --muted: 30 10% 96%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 18 100% 95%;
+    --accent-foreground: 18 100% 45%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 15% 90%;
+    --input: 30 15% 90%;
+    --ring: 18 100% 60%;
+
+    --radius: 0.75rem;
+
+    /* Custom Platix tokens */
+    --orange-50: 24 100% 97%;
+    --orange-100: 22 100% 93%;
+    --orange-500: 18 100% 60%;
+    --orange-600: 16 100% 50%;
+    --orange-700: 14 100% 42%;
+
+    --gray-50: 30 20% 98%;
+    --gray-100: 30 15% 96%;
+    --gray-200: 30 10% 90%;
+    --gray-300: 25 8% 80%;
+    --gray-400: 220 8% 60%;
+    --gray-500: 220 10% 50%;
+    --gray-600: 220 12% 40%;
+    --gray-700: 220 15% 30%;
+    --gray-800: 220 15% 20%;
+    --gray-900: 220 15% 12%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(18 100% 60%) 0%,
+      hsl(30 100% 65%) 100%
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(30 20% 98%) 0%,
+      hsl(0 0% 100%) 100%
+    );
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 15% 15% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(220 15% 15% / 0.08),
+      0 2px 4px -2px hsl(220 15% 15% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(220 15% 15% / 0.08),
+      0 4px 6px -4px hsl(220 15% 15% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(220 15% 15% / 0.1),
+      0 8px 10px -6px hsl(220 15% 15% / 0.05);
+    --shadow-orange: 0 10px 30px -10px
+      hsl(18 100% 60% / 0.35);
+
+    /* Sidebar (si la landing lo usa) */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* DARK MODE SOLO PARA LANDING */
+  .landing-root.dark {
+    --background: 220 15% 8%;
+    --foreground: 30 10% 96%;
+
+    --card: 220 15% 12%;
+    --card-foreground: 30 10% 96%;
+
+    --popover: 220 15% 12%;
+    --popover-foreground: 30 10% 96%;
+
+    --primary: 18 100% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 30 10% 90%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 18 80% 15%;
+    --accent-foreground: 18 100% 70%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 18 100% 60%;
+  }
+
+  /* BASE STYLES SOLO LANDING */
+  .landing-root * {
+    @apply border-border;
+  }
+
+  .landing-root {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  .landing-root {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ============================
+   LANDING UTILITIES
+============================ */
+@layer utilities {
+  .landing-root .text-balance {
+    text-wrap: balance;
+  }
+
+  .landing-root .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .landing-root .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  .landing-root .shadow-orange {
+    box-shadow: var(--shadow-orange);
+  }
+}

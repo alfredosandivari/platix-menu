@@ -35,7 +35,11 @@ export default function App() {
           {isBusiness ? (
             <Routes>
               {/* MENU */}
-              <Route path="/" element={<Menu />} />
+              <Route path="/" element={
+                <div className="menu-root">
+                  <Menu />  
+                </div>
+              } />
 
               {/* ADMIN */}
               <Route path="/admin" element={<AdminLayout />}>
@@ -52,7 +56,11 @@ export default function App() {
                 LANDING (root domain)
             ===================== */
             <Routes>
-              <Route path="/" element={<Landing />} />
+              <Route path="/" element={
+                <div className="landing-root">
+                  <Landing />
+                </div>
+                } />
               <Route path="*" element={<NotFound />} />
             </Routes>
           )}
