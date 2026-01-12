@@ -2,16 +2,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { getBusinessSlug } from "@/lib/domain";
+
 import Landing from "@/pages/Landing";
-import LandingLayout from "@/layouts/LandingLayout";
 import Menu from "@/pages/Menu";
+import MenuLayout from "@/layouts/MenuLayout";
+
+type Status = "loading" | "valid" | "invalid";
 
 export default function BusinessGate() {
-  const [status, setStatus] = useState<
-    "loading" | "valid" | "invalid"
-  >("loading");
-
-  const [businessId, setBusinessId] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>("loading");
 
   useEffect(() => {
     const resolve = async () => {
@@ -28,13 +27,7 @@ export default function BusinessGate() {
         .eq("slug", slug)
         .maybeSingle();
 
-      if (!data) {
-        setStatus("invalid");
-        return;
-      }
-
-      setBusinessId(data.id);
-      setStatus("valid");
+      setStatus(data ? "valid" : "invalid");
     };
 
     resolve();
@@ -43,10 +36,13 @@ export default function BusinessGate() {
   if (status === "loading") return null;
 
   if (status === "invalid") {
-    return 
-        <Landing />
-    ;
+    // Landing YA está envuelta por LandingLayout
+    return <Landing />;
   }
 
-  return <Menu />;
+  return (
+    <MenuLayout>
+      <Menu />
+    </MenuLayout>
+  );
 }
