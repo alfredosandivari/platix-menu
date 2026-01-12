@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import BusinessGate from "@/components/BusinessGate";
 
 import Menu from "./pages/Menu";
 import Landing from "./pages/Landing";
@@ -20,9 +21,6 @@ import { getBusinessSlug } from "@/lib/domain";
 const queryClient = new QueryClient();
 
 export default function App() {
-  const slug = getBusinessSlug();
-  const isBusiness = Boolean(slug);
-
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
@@ -30,44 +28,20 @@ export default function App() {
           <Toaster />
           <Sonner />
 
-          {/* =====================
-              BUSINESS (subdominio)
-          ===================== */}
-          {isBusiness ? (
-            <Routes>
-              {/* MENU */}
-              <Route path="/" element={
-                <div className="menu-root">
-                  <Menu />  
-                </div>
-              } />
+          <Routes>
+            {/* PUBLIC (landing OR menu) */}
+            <Route path="/" element={<BusinessGate />} />
 
-              {/* ADMIN */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="categories" element={<AdminCategoriesPage />} />
-                <Route path="items" element={<AdminItemsPage />} />
-              </Route>
+            {/* ADMIN (solo si business existe) */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="categories" element={<AdminCategoriesPage />} />
+              <Route path="items" element={<AdminItemsPage />} />
+            </Route>
 
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          ) : (
-            /* =====================
-                LANDING (root domain)
-            ===================== */
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <LandingLayout>
-                    <Landing />
-                  </LandingLayout>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          )}
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </TooltipProvider>
       </QueryClientProvider>
     </BrowserRouter>
