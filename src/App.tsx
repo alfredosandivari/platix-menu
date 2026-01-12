@@ -30,7 +30,12 @@ export default function App() {
 
           <Routes>
             {/* PUBLIC (landing OR menu) */}
-            <Route path="/" element={<BusinessGate />} />
+            <Route path="/" element={
+              <LandingLayout>
+                <BusinessGate />
+              </LandingLayout>
+              } 
+            />
 
             {/* ADMIN (solo si business existe) */}
             <Route path="/admin" element={<AdminLayout />}>

@@ -44,9 +44,7 @@ export default function BusinessGate() {
 
   if (status === "invalid") {
     return 
-    <LandingLayout>
         <Landing />
-    </LandingLayout>
     ;
   }
 
