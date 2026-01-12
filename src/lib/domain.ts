@@ -1,19 +1,24 @@
-export const getBusinessSlug = (): string | null => {
-    const hostname = window.location.hostname;
-  
-    // LOCALHOST
-    if (hostname === "localhost") {
-      return import.meta.env.VITE_DEBUG_SLUG ?? null;
-    }
-  
-    // demo.platix.app → ["demo", "platix", "app"]
-    const parts = hostname.split(".");
-  
-    // subdominio válido
-    if (parts.length >= 3) {
-      return parts[0];
-    }
-  
+export function getBusinessSlug(): string | null {
+  if (typeof window === "undefined") return null;
+
+  const host = window.location.hostname;
+
+  // Root domains → LANDING
+  if (
+    host === "platix.app" ||
+    host === "www.platix.app" ||
+    host === "localhost"
+  ) {
     return null;
-};
-  
+  }
+
+  // Subdomain → BUSINESS
+  const subdomain = host.split(".")[0];
+
+  // Seguridad extra
+  if (!subdomain || subdomain === "www") {
+    return null;
+  }
+
+  return subdomain;
+}
