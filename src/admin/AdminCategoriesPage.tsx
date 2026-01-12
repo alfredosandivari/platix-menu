@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { getBusinessSlug } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { resolveAdminBusiness } from "./useAdminBusiness";
 import { ArrowUp, ArrowDown } from "lucide-react";
 
 /* =====================
@@ -33,10 +33,31 @@ export default function AdminCategoriesPage() {
   ===================== */
 
   useEffect(() => {
-    resolveAdminBusiness()
-      .then((b) => setBusinessId(b.id))
-      .catch(() => alert("No se pudo resolver el negocio"));
+    const resolveBusiness = async () => {
+      const slug = getBusinessSlug();
+  
+      if (!slug) {
+        alert("No se pudo determinar el negocio");
+        return;
+      }
+  
+      const { data: business, error } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("slug", slug)
+        .single();
+  
+      if (error || !business) {
+        alert("Negocio no encontrado");
+        return;
+      }
+  
+      setBusinessId(business.id);
+    };
+  
+    resolveBusiness();
   }, []);
+  
 
   /* =====================
      FETCH

@@ -1,7 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { useState } from "react";
 import Sidebar from "./Sidebar";
-import LogoHeader from "./LogoHeader";
 
 export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -30,8 +29,6 @@ export default function AdminLayout() {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
-        <LogoHeader onMenuClick={() => setMobileOpen(!mobileOpen)} />
-
         <main className="p-6 w-full max-w-7xl mx-auto">
           <Outlet />
         </main>

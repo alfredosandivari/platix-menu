@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/lib/supabaseClient";
-import { PLATIX_TAGLINE } from "@/lib/copy";
+import { COPY } from "@/lib/copy";
+import { THEMES } from "@/lib/themes";
+import { getBusinessSlug } from "@/lib/domain";
 
 /* =====================
    TYPES
@@ -15,7 +17,7 @@ interface MenuItem {
   name: string;
   description: string;
   price: string;
-  image?: string;
+  image?: string | null;
   available: boolean;
 }
 
@@ -38,7 +40,7 @@ const SkeletonMenuGrid = () => (
 
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {Array.from({ length: 6 }).map((_, i) => (
-        <Card key={i} className="bg-card border border-border animate-pulse">
+        <Card key={i} className="animate-pulse">
           <CardHeader>
             <div className="h-5 w-3/4 bg-muted rounded" />
           </CardHeader>
@@ -54,8 +56,6 @@ const SkeletonMenuGrid = () => (
   </div>
 );
 
-
-
 /* =====================
    PAGE
 ===================== */
@@ -65,90 +65,71 @@ export default function MenuPage() {
     id: string;
     name: string;
     logo_url: string | null;
+    theme: "dark" | "warm" | "light" | null;
   } | null>(null);
 
   const [categories, setCategories] = useState<MenuCategory[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [pageReady, setPageReady] = useState<boolean>(false);
-
+  const [activeCategory, setActiveCategory] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [pageReady, setPageReady] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const setSectionRef =
-    (id: string) =>
-    (el: HTMLDivElement | null): void => {
+    (id: string) => (el: HTMLDivElement | null) => {
       sectionRefs.current[id] = el;
     };
 
   const setTabRef =
-    (id: string) =>
-    (el: HTMLButtonElement | null): void => {
+    (id: string) => (el: HTMLButtonElement | null) => {
       tabRefs.current[id] = el;
-  };
+    };
 
   /* =====================
-     FETCH MENU (DOMAIN)
+     FETCH DATA
   ===================== */
 
   useEffect(() => {
     const fetchMenu = async () => {
       setLoading(true);
 
-      const domain =
-        window.location.hostname === "localhost"
-          ? import.meta.env.VITE_DEBUG_DOMAIN
-          : window.location.hostname.replace("www.", "");
+      const slug = getBusinessSlug();
+      if (!slug) return;
 
-      // 1️⃣ Business
-      const { data: business, error: businessError } = await supabase
+      const { data: business } = await supabase
         .from("businesses")
-        .select("id, name, logo_url")
-        .eq("domain", domain)
+        .select("id, name, logo_url, theme")
+        .eq("slug", slug)
         .single();
 
-      if (businessError || !business) {
-        console.error("Business no encontrado para dominio:", domain);
-        setLoading(false);
-        setPageReady(true);
-        return;
-      }
+      if (!business) return;
 
       setBusiness(business);
 
-      // 2️⃣ Categorías
-      const { data: catData, error: catError } = await supabase
+      const { data: catData } = await supabase
         .from("menu_categories")
         .select("id, title, position")
         .eq("business_id", business.id)
-        .order("position", { ascending: true });
+        .order("position");
 
-      if (catError || !catData?.length) {
+      if (!catData?.length) {
         setCategories([]);
         setLoading(false);
         setPageReady(true);
         return;
       }
 
-      // 3️⃣ Items
       const categoryIds = catData.map((c) => c.id);
 
-      const { data: itemData, error: itemError } = await supabase
+      const { data: itemData } = await supabase
         .from("menu_items")
         .select(
           "id, name, description, price, image_url, available, category_id, position"
         )
         .in("category_id", categoryIds)
-        .order("position", { ascending: true });
-
-      if (itemError) {
-        console.error("Error cargando items:", itemError);
-        setLoading(false);
-        setPageReady(true);
-        return;
-      }
+        .order("position");
 
       const formatter = new Intl.NumberFormat("es-CL", {
         style: "currency",
@@ -161,20 +142,19 @@ export default function MenuPage() {
         title: cat.title,
         items:
           itemData
-            ?.filter((item) => item.category_id === cat.id)
-            .map((item) => ({
-              id: item.id,
-              name: item.name,
-              description: item.description ?? "",
-              price: formatter.format(item.price ?? 0),
-              image: item.image_url || "/placeholderimage.png",
-              available: item.available ?? true,
+            ?.filter((i) => i.category_id === cat.id)
+            .map((i) => ({
+              id: i.id,
+              name: i.name,
+              description: i.description ?? "",
+              price: formatter.format(i.price ?? 0),
+              image: i.image_url,
+              available: i.available ?? true,
             })) ?? [],
       }));
 
       setCategories(grouped);
       setActiveCategory(grouped[0]?.id ?? "");
-
       setLoading(false);
       setTimeout(() => setPageReady(true), 50);
     };
@@ -183,16 +163,31 @@ export default function MenuPage() {
   }, []);
 
   /* =====================
-     SCROLL (IDÉNTICO A AMBBAR)
+     APPLY THEME
   ===================== */
 
-  const handleCategoryClick = (categoryId: string) => {
-    const section = sectionRefs.current[categoryId];
+  useEffect(() => {
+    if (!business) return;
+
+    const themeKey = business.theme ?? "dark";
+    const theme = THEMES[themeKey];
+
+    const root = document.documentElement;
+    root.style.setProperty("--bg-color", theme.bg);
+    root.style.setProperty("--text-color", theme.text);
+    root.style.setProperty("--primary-color", theme.primary);
+  }, [business]);
+
+  /* =====================
+     SCROLL
+  ===================== */
+
+  const handleCategoryClick = (id: string) => {
+    const section = sectionRefs.current[id];
     if (!section) return;
 
-    const offset = section.offsetTop - 120;
     window.scrollTo({
-      top: offset,
+      top: section.offsetTop - 120,
       behavior: "smooth",
     });
   };
@@ -200,40 +195,23 @@ export default function MenuPage() {
   useEffect(() => {
     if (!categories.length) return;
 
-    const handleScroll = () => {
+    const onScroll = () => {
       const scrollPos = window.scrollY + 150;
-      let current = categories[0]?.id ?? "";
+      let current = categories[0].id;
 
-      for (const category of categories) {
-        const ref = sectionRefs.current[category.id];
-        if (!ref) continue;
-
-        if (scrollPos >= ref.offsetTop) {
-          current = category.id;
+      for (const cat of categories) {
+        const ref = sectionRefs.current[cat.id];
+        if (ref && scrollPos >= ref.offsetTop) {
+          current = cat.id;
         }
       }
 
-      if (current && current !== activeCategory) {
-        setActiveCategory(current);
-      }
+      setActiveCategory(current);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [categories, activeCategory]);
-
-  useEffect(() => {
-    const activeTab = tabRefs.current[activeCategory];
-    if (activeTab) {
-      activeTab.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
-      });
-    }
-  }, [activeCategory]);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [categories]);
 
   /* =====================
      RENDER
@@ -241,58 +219,61 @@ export default function MenuPage() {
 
   return (
     <div
-      className={`min-h-screen bg-black text-foreground transition-opacity duration-500 ${
+      className={`min-h-screen transition-opacity duration-500 ${
         pageReady ? "opacity-100" : "opacity-0"
       }`}
+      style={{
+        backgroundColor: "var(--bg-color)",
+        color: "var(--text-color)",
+      }}
     >
-      {/* Header */}
+      {/* HEADER */}
       <div className="container-platix pt-10 pb-6 flex flex-col items-center">
-        {business?.logo_url ? (
+        {business?.logo_url && (
           <img
             src={business.logo_url}
             alt={business.name}
             className="h-20 md:h-24 object-contain mb-4"
           />
-        ) : (
-          <h1 className="text-4xl md:text-6xl font-serif text-center mb-4 text-gradient-gold">
-            {business?.name ?? "Menú"}
-          </h1>
         )}
 
-        <p className="text-center text-muted-foreground">
-          {PLATIX_TAGLINE.en}
+        <p className="text-center opacity-70">
+          {COPY.en.product.tagline}
         </p>
       </div>
 
-
-      {/* Tabs */}
-      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur border-b border-border">
+      {/* TABS */}
+      <div
+        className="sticky top-0 z-20 backdrop-blur"
+        style={{ backgroundColor: "var(--bg-color)" }}
+      >
         <div className="container-platix flex gap-6 overflow-x-auto py-3">
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-7 w-24 bg-muted rounded-full animate-pulse"
-                />
-              ))
-            : categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  ref={setTabRef(cat.id)}
-                  onClick={() => handleCategoryClick(cat.id)}
-                  className={`text-sm md:text-base font-medium whitespace-nowrap pb-2 border-b-2 transition-colors ${
-                    activeCategory === cat.id
-                      ? "text-primary border-primary"
-                      : "text-muted-foreground border-transparent hover:text-primary"
-                  }`}
-                >
-                  {cat.title}
-                </button>
-              ))}
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              ref={setTabRef(cat.id)}
+              onClick={() => handleCategoryClick(cat.id)}
+              className="pb-2 border-b-2 transition-opacity"
+              style={
+                activeCategory === cat.id
+                  ? {
+                      color: "var(--primary-color)",
+                      borderColor: "var(--primary-color)",
+                    }
+                  : {
+                      color: "var(--text-color)",
+                      opacity: 0.6,
+                      borderColor: "transparent",
+                    }
+              }
+            >
+              {cat.title}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Content */}
+      {/* CONTENT */}
       {loading ? (
         <SkeletonMenuGrid />
       ) : (
@@ -301,38 +282,72 @@ export default function MenuPage() {
             <section
               key={category.id}
               ref={setSectionRef(category.id)}
-              className="mb-24 scroll-mt-32"
+              className="mb-24"
             >
-              <h2 className="text-3xl font-serif mb-4 text-gradient-gold">
+              <h2
+                className="text-3xl font-serif mb-4"
+                style={{ color: "var(--primary-color)" }}
+              >
                 {category.title}
               </h2>
-              <Separator className="mb-6" />
+
+              <Separator className="mb-6 opacity-30" />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {category.items
-                  .filter((item) => item.available)
+                  .filter((i) => i.available)
                   .map((item) => (
                     <Card
                       key={item.id}
                       onClick={() => setSelectedItem(item)}
-                      className="bg-card border border-border hover:shadow-xl transition cursor-pointer"
+                      className="cursor-pointer transition hover:shadow-xl"
+                      style={{
+                        backgroundColor:
+                          business?.theme === "light"
+                            ? "rgba(0,0,0,0.02)"
+                            : "rgba(255,255,255,0.03)",
+                        border:
+                          business?.theme === "light"
+                            ? "1px solid rgba(0,0,0,0.06)"
+                            : "1px solid rgba(255,255,255,0.08)",
+                      }}
                     >
                       <CardHeader>
-                        <CardTitle className="text-xl font-semibold">
+                        <CardTitle 
+                          className="text-xl font-semibold"
+                          style={{ color: "var(--text-color)" }}
+                        >
                           {item.name}
                         </CardTitle>
                       </CardHeader>
+
                       <CardContent>
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          loading="lazy"
-                          className="w-full h-48 object-cover rounded-md mb-4"
-                        />
-                        <p className="text-sm text-muted-foreground mb-3">
+                        <div className="w-full h-48 rounded-md mb-4 bg-muted flex items-center justify-center overflow-hidden">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : business?.logo_url ? (
+                            <img
+                              src={business.logo_url}
+                              alt={business.name}
+                              className="h-16 opacity-70"
+                            />
+                          ) : null}
+                        </div>
+
+                        <p 
+                          className="text-sm"
+                          style={{ color: "var(--text-color)", opacity: 0.75 }}>
                           {item.description}
                         </p>
-                        <p className="text-lg font-semibold text-gradient-gold">
+
+                        <p
+                          className="text-lg font-semibold"
+                          style={{ color: "var(--primary-color)" }}
+                        >
                           {item.price}
                         </p>
                       </CardContent>
@@ -344,28 +359,42 @@ export default function MenuPage() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* MODAL */}
       {selectedItem && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
           onClick={(e) =>
             e.target === e.currentTarget && setSelectedItem(null)
           }
         >
-          <div className="bg-background rounded-2xl max-w-md w-full overflow-hidden">
-            <img
-              src={selectedItem.image}
-              alt={selectedItem.name}
-              className="w-full max-h-72 object-cover"
-            />
+          <div
+            className="rounded-2xl max-w-md w-full overflow-hidden"
+            style={{ backgroundColor: "var(--bg-color)" }}
+          >
+            {selectedItem.image && (
+              <img
+                src={selectedItem.image}
+                className="w-full max-h-72 object-cover"
+              />
+            )}
+
             <div className="p-6">
-              <h3 className="text-2xl font-serif mb-2 text-gradient-gold">
+              <h3
+                className="text-2xl font-serif mb-2"
+                style={{ color: "var(--primary-color)" }}
+              >
                 {selectedItem.name}
               </h3>
-              <p className="text-muted-foreground mb-4">
+
+              <p className="opacity-70 mb-4">
                 {selectedItem.description}
               </p>
-              <p className="text-xl font-semibold text-gradient-gold">
+
+              <p
+                className="text-xl font-semibold"
+                style={{ color: "var(--primary-color)" }}
+              >
                 {selectedItem.price}
               </p>
             </div>

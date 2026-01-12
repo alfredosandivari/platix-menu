@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { resolveAdminBusiness } from "./useAdminBusiness";
+import { getBusinessSlug } from "@/lib/domain";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 /* =====================
    TYPES
@@ -28,6 +33,7 @@ interface RecentItem {
 
 export default function AdminDashboard() {
   const [businessName, setBusinessName] = useState("");
+  const [businessId, setBusinessId] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats>({
     categories: 0,
     items: 0,
@@ -46,10 +52,32 @@ export default function AdminDashboard() {
       try {
         setLoading(true);
 
-        const business = await resolveAdminBusiness();
+        const slug = getBusinessSlug();
+        if (!slug) {
+          console.error("No se pudo resolver slug");
+          return;
+        }
+
+        // 1️⃣ Business
+        const { data: business, error: businessError } = await supabase
+          .from("businesses")
+          .select("id, name")
+          .eq("slug", slug)
+          .single();
+
+        if (businessError || !business) {
+          console.error("Business no encontrado");
+          return;
+        }
+
+        setBusinessId(business.id);
         setBusinessName(business.name);
 
-        /* Categorías */
+        /* =====================
+           STATS
+        ===================== */
+
+        // Categorías
         const { data: categoryIds, count: categoriesCount } =
           await supabase
             .from("menu_categories")
@@ -58,27 +86,38 @@ export default function AdminDashboard() {
 
         const ids = categoryIds?.map((c) => c.id) ?? [];
 
-        /* Total productos */
+        if (ids.length === 0) {
+          setStats({
+            categories: categoriesCount ?? 0,
+            items: 0,
+            itemsWithoutImage: 0,
+            itemsUnavailable: 0,
+          });
+          setRecentItems([]);
+          return;
+        }
+
+        // Total productos
         const { count: itemsCount } = await supabase
           .from("menu_items")
           .select("id", { count: "exact", head: true })
           .in("category_id", ids);
 
-        /* Productos sin imagen */
+        // Productos sin imagen
         const { count: noImageCount } = await supabase
           .from("menu_items")
           .select("id", { count: "exact", head: true })
           .in("category_id", ids)
           .is("image_url", null);
 
-        /* Productos no disponibles */
+        // Productos no disponibles
         const { count: unavailableCount } = await supabase
           .from("menu_items")
           .select("id", { count: "exact", head: true })
           .in("category_id", ids)
           .eq("available", false);
 
-        /* Últimos productos editados / creados */
+        // Últimos productos editados
         const { data: recent } = await supabase
           .from("menu_items")
           .select("id, name, updated_at")

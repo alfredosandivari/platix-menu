@@ -1,6 +1,8 @@
 "use client";
 
 import { NavLink } from "react-router-dom";
+import { COPY } from "@/lib/copy";
+
 import {
   LayoutDashboard,
   List,
@@ -11,19 +13,21 @@ interface SidebarProps {
   onNavigate?: () => void;
 }
 
+const lang = "en";
+
 const navItems = [
   {
-    label: "Dashboard",
+    label: COPY[lang].admin.dashboard,
     to: "/admin",
     icon: LayoutDashboard,
   },
   {
-    label: "Categorías",
+    label: COPY[lang].admin.categories,
     to: "/admin/categories",
     icon: List,
   },
   {
-    label: "Productos",
+    label: COPY[lang].admin.products,
     to: "/admin/items",
     icon: UtensilsCrossed,
   },
