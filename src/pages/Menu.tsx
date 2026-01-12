@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/lib/supabaseClient";
-import PageShell from "@/components/layout/PageShell";
+import { PLATIX_TAGLINE } from "@/lib/copy";
 
 /* =====================
    TYPES
@@ -54,49 +54,58 @@ const SkeletonMenuGrid = () => (
   </div>
 );
 
+
+
 /* =====================
    PAGE
 ===================== */
 
 export default function MenuPage() {
+  const [business, setBusiness] = useState<{
+    id: string;
+    name: string;
+    logo_url: string | null;
+  } | null>(null);
+
   const [categories, setCategories] = useState<MenuCategory[]>([]);
-  const [activeCategory, setActiveCategory] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [pageReady, setPageReady] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [pageReady, setPageReady] = useState<boolean>(false);
+
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const setSectionRef =
-    (id: string) => (el: HTMLDivElement | null) => {
+    (id: string) =>
+    (el: HTMLDivElement | null): void => {
       sectionRefs.current[id] = el;
     };
 
   const setTabRef =
-    (id: string) => (el: HTMLButtonElement | null) => {
+    (id: string) =>
+    (el: HTMLButtonElement | null): void => {
       tabRefs.current[id] = el;
-    };
+  };
 
   /* =====================
-     FETCH MENU (DOMAIN BASED)
+     FETCH MENU (DOMAIN)
   ===================== */
 
   useEffect(() => {
     const fetchMenu = async () => {
       setLoading(true);
 
-      const isLocalhost = window.location.hostname === "localhost";
-
       const domain =
-        isLocalhost && import.meta.env.VITE_DEBUG_DOMAIN
+        window.location.hostname === "localhost"
           ? import.meta.env.VITE_DEBUG_DOMAIN
           : window.location.hostname.replace("www.", "");
 
-      /* 1️⃣ Business */
+      // 1️⃣ Business
       const { data: business, error: businessError } = await supabase
         .from("businesses")
-        .select("id, name")
+        .select("id, name, logo_url")
         .eq("domain", domain)
         .single();
 
@@ -107,7 +116,9 @@ export default function MenuPage() {
         return;
       }
 
-      /* 2️⃣ Categorías */
+      setBusiness(business);
+
+      // 2️⃣ Categorías
       const { data: catData, error: catError } = await supabase
         .from("menu_categories")
         .select("id, title, position")
@@ -121,16 +132,23 @@ export default function MenuPage() {
         return;
       }
 
-      /* 3️⃣ Items */
+      // 3️⃣ Items
       const categoryIds = catData.map((c) => c.id);
 
-      const { data: itemData } = await supabase
+      const { data: itemData, error: itemError } = await supabase
         .from("menu_items")
         .select(
           "id, name, description, price, image_url, available, category_id, position"
         )
         .in("category_id", categoryIds)
         .order("position", { ascending: true });
+
+      if (itemError) {
+        console.error("Error cargando items:", itemError);
+        setLoading(false);
+        setPageReady(true);
+        return;
+      }
 
       const formatter = new Intl.NumberFormat("es-CL", {
         style: "currency",
@@ -156,6 +174,7 @@ export default function MenuPage() {
 
       setCategories(grouped);
       setActiveCategory(grouped[0]?.id ?? "");
+
       setLoading(false);
       setTimeout(() => setPageReady(true), 50);
     };
@@ -164,15 +183,16 @@ export default function MenuPage() {
   }, []);
 
   /* =====================
-     SCROLL LOGIC
+     SCROLL (IDÉNTICO A AMBBAR)
   ===================== */
 
-  const handleCategoryClick = (id: string) => {
-    const section = sectionRefs.current[id];
+  const handleCategoryClick = (categoryId: string) => {
+    const section = sectionRefs.current[categoryId];
     if (!section) return;
 
+    const offset = section.offsetTop - 120;
     window.scrollTo({
-      top: section.offsetTop - 120,
+      top: offset,
       behavior: "smooth",
     });
   };
@@ -180,32 +200,39 @@ export default function MenuPage() {
   useEffect(() => {
     if (!categories.length) return;
 
-    const onScroll = () => {
+    const handleScroll = () => {
       const scrollPos = window.scrollY + 150;
-      let current = categories[0].id;
+      let current = categories[0]?.id ?? "";
 
       for (const category of categories) {
         const ref = sectionRefs.current[category.id];
-        if (ref && scrollPos >= ref.offsetTop) {
+        if (!ref) continue;
+
+        if (scrollPos >= ref.offsetTop) {
           current = category.id;
         }
       }
 
-      if (current !== activeCategory) {
+      if (current && current !== activeCategory) {
         setActiveCategory(current);
       }
     };
 
-    window.addEventListener("scroll", onScroll);
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [categories, activeCategory]);
 
   useEffect(() => {
-    tabRefs.current[activeCategory]?.scrollIntoView({
-      behavior: "smooth",
-      inline: "center",
-    });
+    const activeTab = tabRefs.current[activeCategory];
+    if (activeTab) {
+      activeTab.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
   }, [activeCategory]);
 
   /* =====================
@@ -213,140 +240,138 @@ export default function MenuPage() {
   ===================== */
 
   return (
-    <PageShell containerClassName="container-platix">
-      <div
-        className={`min-h-screen bg-[#000] text-foreground transition-opacity duration-500 ${
-          pageReady ? "opacity-100" : "opacity-0"
-        }`}
-      >
-
-        {/* Volver */}
-        <div className="container-platix pt-6">
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="text-sm font-medium text-muted-foreground hover:text-primary"
-          >
-            ← Volver
-          </button>
-        </div>
-
-        {/* Header */}
-        <div className="container-platix pt-6 pb-6">
-          <h1 className="text-4xl md:text-6xl font-serif text-center mb-4 text-gradient-gold">
-            Menú
-          </h1>
-          <p className="text-center text-lg text-muted-foreground max-w-2xl mx-auto">
-            Explora nuestra carta y descubre la experiencia del lugar.
-          </p>
-        </div>
-
-        {/* Tabs */}
-        <div className="sticky top-0 z-20 bg-background/80 backdrop-blur border-b border-border">
-          <div className="container-platix flex gap-6 overflow-x-auto py-3">
-            {loading
-              ? Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-7 w-24 bg-muted rounded-full animate-pulse"
-                  />
-                ))
-              : categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    ref={setTabRef(cat.id)}
-                    onClick={() => handleCategoryClick(cat.id)}
-                    className={`text-sm font-medium pb-2 border-b-2 ${
-                      activeCategory === cat.id
-                        ? "text-primary border-primary"
-                        : "text-muted-foreground border-transparent hover:text-primary"
-                    }`}
-                  >
-                    {cat.title}
-                  </button>
-                ))}
-          </div>
-        </div>
-
-        {/* Content */}
-        {loading ? (
-          <SkeletonMenuGrid />
+    <div
+      className={`min-h-screen bg-black text-foreground transition-opacity duration-500 ${
+        pageReady ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      {/* Header */}
+      <div className="container-platix pt-10 pb-6 flex flex-col items-center">
+        {business?.logo_url ? (
+          <img
+            src={business.logo_url}
+            alt={business.name}
+            className="h-20 md:h-24 object-contain mb-4"
+          />
         ) : (
-          <div className="container-platix mx-auto py-12">
-            {categories.map((cat) => (
-              <section
-                key={cat.id}
-                ref={setSectionRef(cat.id)}
-                className="mb-24 scroll-mt-32"
-              >
-                <h2 className="text-3xl font-serif mb-4 text-gradient-gold">
-                  {cat.title}
-                </h2>
-                <Separator className="mb-6" />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {cat.items
-                    .filter((i) => i.available)
-                    .map((item) => (
-                      <Card
-                        key={item.id}
-                        onClick={() => setSelectedItem(item)}
-                        className="cursor-pointer hover:shadow-xl min-h-[420px] flex flex-col"
-                      >
-                        <CardHeader>
-                          <CardTitle>{item.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent
-                          className="flex flex-col flex-1"  
-                        >
-                        <div className="relative w-full h-48 rounded-md mb-4 overflow-hidden bg-gradient-to-br from-neutral-900 to-neutral-800 flex items-center justify-center">
-                          <img
-                            src={item.image || "/menu-placeholder.jpg"}
-                            alt={item.name}
-                            className="absolute inset-0 w-full h-full object-cover opacity-90"
-                          />
-                        </div>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {item.description}
-                          </p>
-                          <p className="text-lg font-semibold text-gradient-gold">
-                            {item.price}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                </div>
-              </section>
-            ))}
-          </div>
+          <h1 className="text-4xl md:text-6xl font-serif text-center mb-4 text-gradient-gold">
+            {business?.name ?? "Menú"}
+          </h1>
         )}
 
-        {/* Modal */}
-        {selectedItem && (
-          <div
-            className="fixed inset-0 bg-black/70 flex items-center justify-center px-4 z-50"
-            onClick={(e) => e.target === e.currentTarget && setSelectedItem(null)}
-          >
-            <div className="bg-background rounded-2xl max-w-md w-full overflow-hidden">
-              <img
-                src={selectedItem.image}
-                alt={selectedItem.name}
-                className="w-full max-h-72 object-cover"
-              />
-              <div className="p-6">
-                <h3 className="text-2xl font-serif mb-2 text-gradient-gold">
-                  {selectedItem.name}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {selectedItem.description}
-                </p>
-                <p className="text-xl font-semibold text-gradient-gold">
-                  {selectedItem.price}
-                </p>
+        <p className="text-center text-muted-foreground">
+          {PLATIX_TAGLINE.en}
+        </p>
+      </div>
+
+
+      {/* Tabs */}
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur border-b border-border">
+        <div className="container-platix flex gap-6 overflow-x-auto py-3">
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-7 w-24 bg-muted rounded-full animate-pulse"
+                />
+              ))
+            : categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  ref={setTabRef(cat.id)}
+                  onClick={() => handleCategoryClick(cat.id)}
+                  className={`text-sm md:text-base font-medium whitespace-nowrap pb-2 border-b-2 transition-colors ${
+                    activeCategory === cat.id
+                      ? "text-primary border-primary"
+                      : "text-muted-foreground border-transparent hover:text-primary"
+                  }`}
+                >
+                  {cat.title}
+                </button>
+              ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <SkeletonMenuGrid />
+      ) : (
+        <div className="container-platix py-12 md:py-16">
+          {categories.map((category) => (
+            <section
+              key={category.id}
+              ref={setSectionRef(category.id)}
+              className="mb-24 scroll-mt-32"
+            >
+              <h2 className="text-3xl font-serif mb-4 text-gradient-gold">
+                {category.title}
+              </h2>
+              <Separator className="mb-6" />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {category.items
+                  .filter((item) => item.available)
+                  .map((item) => (
+                    <Card
+                      key={item.id}
+                      onClick={() => setSelectedItem(item)}
+                      className="bg-card border border-border hover:shadow-xl transition cursor-pointer"
+                    >
+                      <CardHeader>
+                        <CardTitle className="text-xl font-semibold">
+                          {item.name}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          loading="lazy"
+                          className="w-full h-48 object-cover rounded-md mb-4"
+                        />
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {item.description}
+                        </p>
+                        <p className="text-lg font-semibold text-gradient-gold">
+                          {item.price}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
               </div>
+            </section>
+          ))}
+        </div>
+      )}
+
+      {/* Modal */}
+      {selectedItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+          onClick={(e) =>
+            e.target === e.currentTarget && setSelectedItem(null)
+          }
+        >
+          <div className="bg-background rounded-2xl max-w-md w-full overflow-hidden">
+            <img
+              src={selectedItem.image}
+              alt={selectedItem.name}
+              className="w-full max-h-72 object-cover"
+            />
+            <div className="p-6">
+              <h3 className="text-2xl font-serif mb-2 text-gradient-gold">
+                {selectedItem.name}
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {selectedItem.description}
+              </p>
+              <p className="text-xl font-semibold text-gradient-gold">
+                {selectedItem.price}
+              </p>
             </div>
           </div>
-        )}
-      </div>
-    </PageShell>
+        </div>
+      )}
+    </div>
   );
 }
