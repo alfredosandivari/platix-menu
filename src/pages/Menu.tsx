@@ -199,9 +199,18 @@ export default function MenuPage() {
     const theme = THEMES[themeKey];
 
     const root = document.documentElement;
-    root.style.setProperty("--bg-color", theme.bg);
-    root.style.setProperty("--text-color", theme.text);
-    root.style.setProperty("--primary-color", theme.primary);
+
+    root.style.setProperty("--background", theme.bg);
+    root.style.setProperty("--foreground", theme.text);
+
+    root.style.setProperty("--card", theme.card ?? theme.bg);
+    root.style.setProperty("--card-foreground", theme.text);
+
+    root.style.setProperty("--muted-foreground", theme.mutedText ?? "#9CA3AF");
+
+    root.style.setProperty("--border", theme.border ?? "rgba(255,255,255,0.1)");
+    root.style.setProperty("--primary", theme.primary);
+
   }, [business]);
 
   /* =====================
