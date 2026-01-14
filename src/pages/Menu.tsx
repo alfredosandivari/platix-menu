@@ -187,38 +187,16 @@ export default function MenuPage() {
   useEffect(() => {
     if (!business) return;
   
-    const themeKey = (business.theme ?? "dark") as keyof typeof THEMES;
-    const theme = THEMES[themeKey];
-  
+    const theme = THEMES[business.theme ?? "dark"];
     const root = document.documentElement;
   
     root.style.setProperty("--background", theme.background);
     root.style.setProperty("--foreground", theme.foreground);
-  
-    root.style.setProperty("--card", theme.card);
-    root.style.setProperty("--card-foreground", theme.cardForeground);
-  
-    root.style.setProperty("--popover", theme.popover);
-    root.style.setProperty("--popover-foreground", theme.popoverForeground);
-  
     root.style.setProperty("--primary", theme.primary);
-    root.style.setProperty("--primary-foreground", theme.primaryForeground);
-  
-    root.style.setProperty("--secondary", theme.secondary);
-    root.style.setProperty("--secondary-foreground", theme.secondaryForeground);
-  
-    root.style.setProperty("--muted", theme.muted);
-    root.style.setProperty("--muted-foreground", theme.mutedForeground);
-  
-    root.style.setProperty("--accent", theme.accent);
-    root.style.setProperty("--accent-foreground", theme.accentForeground);
-  
-    root.style.setProperty("--border", theme.border);
-    root.style.setProperty("--input", theme.input);
-    root.style.setProperty("--ring", theme.ring);
-  
-    if (theme.radius) root.style.setProperty("--radius", theme.radius);
-  }, [business]);
+    root.style.setProperty("--muted-foreground", theme.mutedForeground ?? theme.foreground);
+    root.style.setProperty("--border", theme.border ?? "0 0% 0%");
+    root.style.setProperty("--card", theme.card ?? theme.background);
+  }, [business?.theme]);
   
 
   /* =====================
