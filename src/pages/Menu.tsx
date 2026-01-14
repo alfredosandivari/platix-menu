@@ -72,6 +72,7 @@ export default function MenuPage() {
   const [activeCategory, setActiveCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [pageReady, setPageReady] = useState(false);
+
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -88,7 +89,7 @@ export default function MenuPage() {
     };
 
   /* =====================
-     FETCH MENU (REUTILIZABLE)
+     FETCH MENU
   ===================== */
 
   const fetchMenu = async () => {
@@ -100,7 +101,6 @@ export default function MenuPage() {
       return;
     }
 
-    // 1️⃣ Business
     const { data: business } = await supabase
       .from("businesses")
       .select("id, name, logo_url, theme")
@@ -114,7 +114,6 @@ export default function MenuPage() {
 
     setBusiness(business);
 
-    // 2️⃣ Categories
     const { data: catData } = await supabase
       .from("menu_categories")
       .select("id, title, position")
@@ -128,7 +127,6 @@ export default function MenuPage() {
       return;
     }
 
-    // 3️⃣ Items
     const categoryIds = catData.map((c) => c.id);
 
     const { data: itemData } = await supabase
@@ -139,9 +137,9 @@ export default function MenuPage() {
       .in("category_id", categoryIds)
       .order("position");
 
-    const formatter = new Intl.NumberFormat("es-CL", {
+    const formatter = new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "CLP",
+      currency: "USD",
       maximumFractionDigits: 0,
     });
 
@@ -168,50 +166,60 @@ export default function MenuPage() {
   };
 
   /* =====================
-     INITIAL LOAD
+     INITIAL LOAD + FOCUS
   ===================== */
 
   useEffect(() => {
     fetchMenu();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  /* =====================
-     FIX OPCIÓN A — REFRESH ON FOCUS
-  ===================== */
 
   useEffect(() => {
-    const onFocus = () => {
-      fetchMenu();
-    };
-
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
+    window.addEventListener("focus", fetchMenu);
+    return () => window.removeEventListener("focus", fetchMenu);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* =====================
-     APPLY THEME
+     APPLY THEME (✅ HSL)
   ===================== */
 
   useEffect(() => {
     if (!business) return;
-
-    const themeKey = business.theme ?? "dark";
+  
+    const themeKey = (business.theme ?? "dark") as keyof typeof THEMES;
     const theme = THEMES[themeKey];
-
+  
     const root = document.documentElement;
-
-    root.style.setProperty("--background", theme.bg);
-    root.style.setProperty("--foreground", theme.text);
-
-    root.style.setProperty("--card", theme.card ?? theme.bg);
-    root.style.setProperty("--card-foreground", theme.text);
-
-    root.style.setProperty("--muted-foreground", theme.mutedText ?? "#9CA3AF");
-
-    root.style.setProperty("--border", theme.border ?? "rgba(255,255,255,0.1)");
+  
+    root.style.setProperty("--background", theme.background);
+    root.style.setProperty("--foreground", theme.foreground);
+  
+    root.style.setProperty("--card", theme.card);
+    root.style.setProperty("--card-foreground", theme.cardForeground);
+  
+    root.style.setProperty("--popover", theme.popover);
+    root.style.setProperty("--popover-foreground", theme.popoverForeground);
+  
     root.style.setProperty("--primary", theme.primary);
-
+    root.style.setProperty("--primary-foreground", theme.primaryForeground);
+  
+    root.style.setProperty("--secondary", theme.secondary);
+    root.style.setProperty("--secondary-foreground", theme.secondaryForeground);
+  
+    root.style.setProperty("--muted", theme.muted);
+    root.style.setProperty("--muted-foreground", theme.mutedForeground);
+  
+    root.style.setProperty("--accent", theme.accent);
+    root.style.setProperty("--accent-foreground", theme.accentForeground);
+  
+    root.style.setProperty("--border", theme.border);
+    root.style.setProperty("--input", theme.input);
+    root.style.setProperty("--ring", theme.ring);
+  
+    if (theme.radius) root.style.setProperty("--radius", theme.radius);
   }, [business]);
+  
 
   /* =====================
      SCROLL
@@ -236,9 +244,7 @@ export default function MenuPage() {
 
       for (const cat of categories) {
         const ref = sectionRefs.current[cat.id];
-        if (ref && scrollPos >= ref.offsetTop) {
-          current = cat.id;
-        }
+        if (ref && scrollPos >= ref.offsetTop) current = cat.id;
       }
 
       setActiveCategory(current);
@@ -249,18 +255,29 @@ export default function MenuPage() {
   }, [categories]);
 
   /* =====================
+     CLOSE MODAL (ESC)
+  ===================== */
+
+  useEffect(() => {
+    if (!selectedItem) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedItem(null);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedItem]);
+
+  /* =====================
      RENDER
   ===================== */
 
   return (
     <div
-      className={`min-h-screen transition-opacity duration-500 ${
+      className={`min-h-screen bg-background text-foreground transition-opacity duration-500 ${
         pageReady ? "opacity-100" : "opacity-0"
       }`}
-      style={{
-        backgroundColor: "var(--bg-color)",
-        color: "var(--text-color)",
-      }}
     >
       {/* HEADER */}
       <div className="container-platix pt-10 pb-6 flex flex-col items-center">
@@ -271,34 +288,24 @@ export default function MenuPage() {
             className="h-20 md:h-24 object-contain mb-4"
           />
         )}
-
-        <p className="text-center opacity-70">
+        <p className="text-muted-foreground text-center">
           {COPY.en.product.tagline}
         </p>
       </div>
 
       {/* TABS */}
-      <div className="sticky top-0 z-20 backdrop-blur"
-           style={{ backgroundColor: "var(--bg-color)" }}>
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur border-b border-border">
         <div className="container-platix flex gap-6 overflow-x-auto py-3">
           {categories.map((cat) => (
             <button
               key={cat.id}
               ref={setTabRef(cat.id)}
               onClick={() => handleCategoryClick(cat.id)}
-              className="pb-2 border-b-2 transition-opacity"
-              style={
+              className={`pb-2 border-b-2 transition-colors whitespace-nowrap ${
                 activeCategory === cat.id
-                  ? {
-                      color: "var(--primary-color)",
-                      borderColor: "var(--primary-color)",
-                    }
-                  : {
-                      color: "var(--text-color)",
-                      opacity: 0.6,
-                      borderColor: "transparent",
-                    }
-              }
+                  ? "text-primary border-primary"
+                  : "text-muted-foreground border-transparent hover:text-primary"
+              }`}
             >
               {cat.title}
             </button>
@@ -317,14 +324,11 @@ export default function MenuPage() {
               ref={setSectionRef(category.id)}
               className="mb-24"
             >
-              <h2
-                className="text-3xl font-serif mb-4"
-                style={{ color: "var(--primary-color)" }}
-              >
+              <h2 className="text-3xl font-serif mb-4 text-primary">
                 {category.title}
               </h2>
 
-              <Separator className="mb-6 opacity-30" />
+              <Separator className="mb-6" />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {category.items
@@ -334,22 +338,9 @@ export default function MenuPage() {
                       key={item.id}
                       onClick={() => setSelectedItem(item)}
                       className="cursor-pointer transition hover:shadow-xl"
-                      style={{
-                        backgroundColor:
-                          business?.theme === "light"
-                            ? "rgba(0,0,0,0.02)"
-                            : "rgba(255,255,255,0.03)",
-                        border:
-                          business?.theme === "light"
-                            ? "1px solid rgba(0,0,0,0.06)"
-                            : "1px solid rgba(255,255,255,0.08)",
-                      }}
                     >
                       <CardHeader>
-                        <CardTitle
-                          className="text-xl font-semibold"
-                          style={{ color: "var(--text-color)" }}
-                        >
+                        <CardTitle className="text-xl">
                           {item.name}
                         </CardTitle>
                       </CardHeader>
@@ -371,14 +362,11 @@ export default function MenuPage() {
                           ) : null}
                         </div>
 
-                        <p className="text-sm opacity-75 mb-2">
+                        <p className="text-sm text-muted-foreground mb-2">
                           {item.description}
                         </p>
 
-                        <p
-                          className="text-lg font-semibold"
-                          style={{ color: "var(--primary-color)" }}
-                        >
+                        <p className="text-lg font-semibold text-primary">
                           {item.price}
                         </p>
                       </CardContent>
@@ -390,44 +378,54 @@ export default function MenuPage() {
         </div>
       )}
 
-      {/* MODAL */}
+      {/* MODAL (✅ usa theme, no hardcode) */}
       {selectedItem && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70"
           onClick={(e) =>
             e.target === e.currentTarget && setSelectedItem(null)
           }
         >
-          <div
-            className="rounded-2xl max-w-md w-full overflow-hidden"
-            style={{ backgroundColor: "var(--bg-color)" }}
-          >
-            {selectedItem.image && (
+          <div className="rounded-2xl max-w-md w-full overflow-hidden border border-border bg-card text-card-foreground">
+            {selectedItem.image ? (
               <img
                 src={selectedItem.image}
+                alt={selectedItem.name}
                 className="w-full max-h-72 object-cover"
               />
+            ) : (
+              <div className="w-full h-56 bg-muted flex items-center justify-center">
+                {business?.logo_url ? (
+                  <img
+                    src={business.logo_url}
+                    alt={business.name}
+                    className="h-16 opacity-70"
+                  />
+                ) : null}
+              </div>
             )}
 
             <div className="p-6">
-              <h3
-                className="text-2xl font-serif mb-2"
-                style={{ color: "var(--primary-color)" }}
-              >
+              <h3 className="text-2xl font-serif mb-2 text-primary">
                 {selectedItem.name}
               </h3>
 
-              <p className="opacity-70 mb-4">
+              <p className="text-muted-foreground mb-4 leading-relaxed">
                 {selectedItem.description}
               </p>
 
-              <p
-                className="text-xl font-semibold"
-                style={{ color: "var(--primary-color)" }}
-              >
+              <p className="text-xl font-semibold text-primary">
                 {selectedItem.price}
               </p>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  className="text-sm text-muted-foreground hover:text-foreground transition"
+                  onClick={() => setSelectedItem(null)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
