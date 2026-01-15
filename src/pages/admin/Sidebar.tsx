@@ -30,6 +30,11 @@ const navItems = [
     to: "/admin/items",
     icon: UtensilsCrossed,
   },
+  {
+    label: COPY[lang].admin.settings,
+    to: "/admin/settings",
+    icon: UtensilsCrossed,
+  },
 ];
 
 export default function Sidebar({ onNavigate }: SidebarProps) {

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
+
 import {
   Select,
   SelectContent,
@@ -109,7 +110,9 @@ export default function AdminItemsPage() {
 
     setCategories(cats ?? []);
     setItems(itemsData ?? []);
+
   };
+  
 
   /* =====================
      CREATE
@@ -209,6 +212,7 @@ export default function AdminItemsPage() {
     if (editingId === item.id) cancelEdit();
     fetchData();
   };
+  
 
   /* =====================
      RENDER

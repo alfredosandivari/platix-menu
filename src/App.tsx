@@ -13,6 +13,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 import AdminItemsPage from "./pages/admin/AdminItemsPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ export default function App() {
               <Route index element={<AdminDashboard />} />
               <Route path="categories" element={<AdminCategoriesPage />} />
               <Route path="items" element={<AdminItemsPage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
             </Route>
 
             {/* 404 */}
