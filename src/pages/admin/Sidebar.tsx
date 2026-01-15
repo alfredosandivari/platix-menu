@@ -34,8 +34,24 @@ const navItems = [
 
 export default function Sidebar({ onNavigate }: SidebarProps) {
   return (
-    <aside className="h-screen w-64 shrink-0 border-r border-slate-200 bg-white">
-      <nav className="p-4 space-y-1">
+    <aside className="h-screen w-64 shrink-0 border-r border-slate-200 bg-white flex flex-col">
+      
+      {/* 🔶 LOGO / BRAND */}
+      <div className="h-16 px-6 flex items-center border-b border-slate-200">
+        <div className="flex items-center gap-3">
+          <img
+            src="https://res.cloudinary.com/daw2izgzu/image/upload/v1767928581/logosf_igltzt.png"
+            alt="Platix"
+            className="h-8 w-auto"
+          />
+          <span className="font-semibold text-slate-900 tracking-tight">
+            Platix Admin
+          </span>
+        </div>
+      </div>
+
+      {/* 🔶 NAV */}
+      <nav className="flex-1 p-4 space-y-1">
         {navItems.map(({ label, to, icon: Icon }) => (
           <NavLink
             key={to}

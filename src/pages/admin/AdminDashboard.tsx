@@ -14,6 +14,12 @@ import {
    TYPES
 ===================== */
 
+interface Business {
+  id: string;
+  name: string;
+  logo_url: string | null;
+}
+
 interface Stats {
   categories: number;
   items: number;
@@ -24,7 +30,7 @@ interface Stats {
 interface RecentItem {
   id: string;
   name: string;
-  updated_at: string;
+  created_at: string;
 }
 
 /* =====================
@@ -32,8 +38,7 @@ interface RecentItem {
 ===================== */
 
 export default function AdminDashboard() {
-  const [businessName, setBusinessName] = useState("");
-  const [businessId, setBusinessId] = useState<string | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
   const [stats, setStats] = useState<Stats>({
     categories: 0,
     items: 0,
@@ -58,35 +63,39 @@ export default function AdminDashboard() {
           return;
         }
 
-        // 1️⃣ Business
-        const { data: business, error: businessError } = await supabase
+        /* =====================
+           BUSINESS
+        ===================== */
+
+        const { data: businessData, error: businessError } = await supabase
           .from("businesses")
-          .select("id, name")
+          .select("id, name, logo_url")
           .eq("slug", slug)
           .single();
 
-        if (businessError || !business) {
+        if (businessError || !businessData) {
           console.error("Business no encontrado");
           return;
         }
 
-        setBusinessId(business.id);
-        setBusinessName(business.name);
+        setBusiness(businessData);
+        const businessId = businessData.id;
 
         /* =====================
-           STATS
+           CATEGORIES
         ===================== */
 
-        // Categorías
-        const { data: categoryIds, count: categoriesCount } =
-          await supabase
-            .from("menu_categories")
-            .select("id", { count: "exact" })
-            .eq("business_id", business.id);
+        const {
+          data: categories,
+          count: categoriesCount,
+        } = await supabase
+          .from("menu_categories")
+          .select("id", { count: "exact" })
+          .eq("business_id", businessId);
 
-        const ids = categoryIds?.map((c) => c.id) ?? [];
+        const categoryIds = categories?.map((c) => c.id) ?? [];
 
-        if (ids.length === 0) {
+        if (categoryIds.length === 0) {
           setStats({
             categories: categoriesCount ?? 0,
             items: 0,
@@ -97,33 +106,41 @@ export default function AdminDashboard() {
           return;
         }
 
-        // Total productos
+        /* =====================
+           ITEMS STATS
+        ===================== */
+
         const { count: itemsCount } = await supabase
           .from("menu_items")
           .select("id", { count: "exact", head: true })
-          .in("category_id", ids);
+          .in("category_id", categoryIds);
 
-        // Productos sin imagen
         const { count: noImageCount } = await supabase
           .from("menu_items")
           .select("id", { count: "exact", head: true })
-          .in("category_id", ids)
+          .in("category_id", categoryIds)
           .is("image_url", null);
 
-        // Productos no disponibles
         const { count: unavailableCount } = await supabase
           .from("menu_items")
           .select("id", { count: "exact", head: true })
-          .in("category_id", ids)
+          .in("category_id", categoryIds)
           .eq("available", false);
 
-        // Últimos productos editados
-        const { data: recent } = await supabase
+        /* =====================
+           RECENT ITEMS
+        ===================== */
+
+        const { data: recent, error: recentError } = await supabase
           .from("menu_items")
-          .select("id, name, updated_at")
-          .in("category_id", ids)
-          .order("updated_at", { ascending: false })
+          .select("id, name, created_at")
+          .in("category_id", categoryIds)
+          .order("created_at", { ascending: false })
           .limit(5);
+
+        if (recentError) {
+          console.error("Error recent items:", recentError);
+        }
 
         setStats({
           categories: categoriesCount ?? 0,
@@ -135,7 +152,6 @@ export default function AdminDashboard() {
         setRecentItems(recent ?? []);
       } catch (error) {
         console.error("Error cargando dashboard:", error);
-        alert("No se pudo cargar el dashboard");
       } finally {
         setLoading(false);
       }
@@ -150,13 +166,28 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-semibold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Administración de{" "}
-          <span className="font-medium">{businessName}</span>
-        </p>
+      <div className="flex items-start justify-between gap-6">
+        {/* LEFT: Title */}
+        <div>
+          <h1 className="text-3xl font-semibold">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Administración de{" "}
+            <span className="font-medium">{business?.name}</span>
+          </p>
+        </div>
+
+        {/* RIGHT: Business logo */}
+        {business?.logo_url && (
+          <div className="flex items-center">
+            <img
+              src={business.logo_url}
+              alt={business.name}
+              className="h-10 md:h-12 w-auto object-contain opacity-80"
+            />
+          </div>
+        )}
       </div>
+
 
       {loading ? (
         <p className="text-muted-foreground">Cargando información...</p>
@@ -220,7 +251,7 @@ export default function AdminDashboard() {
           {/* RECENT ITEMS */}
           <Card>
             <CardHeader>
-              <CardTitle>Últimos productos modificados</CardTitle>
+              <CardTitle>Últimos productos agregados</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {recentItems.length === 0 ? (
@@ -235,7 +266,7 @@ export default function AdminDashboard() {
                   >
                     <span>{item.name}</span>
                     <span className="text-muted-foreground">
-                      {new Date(item.updated_at).toLocaleDateString()}
+                      {new Date(item.created_at).toLocaleDateString()}
                     </span>
                   </div>
                 ))
