@@ -37,7 +37,11 @@ export default function MenuPage() {
     name: string;
     logo_url: string | null;
     theme: "dark" | "warm" | "light" | null;
+    phone: string | null;
+    address: string | null;
+    opening_hours: string | null;
   } | null>(null);
+  
 
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState("");
@@ -60,7 +64,7 @@ export default function MenuPage() {
 
     const { data: business } = await supabase
       .from("businesses")
-      .select("id, name, logo_url, theme")
+      .select("id, name, logo_url, theme, phone, address, opening_hours")
       .eq("slug", slug)
       .single();
 
@@ -183,6 +187,41 @@ export default function MenuPage() {
         <p style={{ color: theme.mutedText }}>
           {COPY.en.product.tagline}
         </p>
+
+      {(business?.phone || business?.address || business?.opening_hours) && (
+        <div
+          className="mt-4 flex flex-col items-center gap-2 text-sm"
+          style={{ color: theme.mutedText }}
+        >
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+            {business.address && (
+              <span>📍 {business.address}</span>
+            )}
+            {business.phone && (
+              <span>📞 {business.phone}</span>
+            )}
+            {business.opening_hours && (
+              <span>⏰ {business.opening_hours}</span>
+            )}
+          </div>
+
+          {business.phone && (
+            <a
+              href={`https://wa.me/${business.phone.replace(/\D/g, "")}?text=Hola,%20quisiera%20hacer%20una%20reserva`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block rounded-full px-5 py-2 text-sm font-medium transition"
+              style={{
+                backgroundColor: theme.primary,
+                color: theme.bg,
+              }}
+            >
+              Reservas por WhatsApp
+            </a>
+          )}
+        </div>
+      )}
+
       </div>
 
       {/* TABS */}
