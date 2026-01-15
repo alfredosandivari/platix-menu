@@ -137,6 +137,28 @@ export default function MenuPage() {
     window.scrollTo({ top: el.offsetTop - 120, behavior: "smooth" });
   };
 
+  useEffect(() => {
+    if (!categories.length) return;
+  
+    const onScroll = () => {
+      const scrollPos = window.scrollY + 160;
+      let current = categories[0].id;
+  
+      for (const cat of categories) {
+        const el = sectionRefs.current[cat.id];
+        if (el && scrollPos >= el.offsetTop) {
+          current = cat.id;
+        }
+      }
+  
+      setActiveCategory(current);
+    };
+  
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [categories]);
+  
+
   /* =====================
      RENDER
   ===================== */
@@ -149,7 +171,7 @@ export default function MenuPage() {
         pageReady ? "opacity-100" : "opacity-0"
       }`}
       style={{
-        backgroundColor: theme.background,
+        backgroundColor: theme.bg,
         color: theme.text,
       }}
     >
@@ -167,7 +189,7 @@ export default function MenuPage() {
       <div
         className="sticky top-0 z-20 backdrop-blur"
         style={{
-          backgroundColor: theme.background,
+          backgroundColor: theme.bg,
           borderBottom: `1px solid ${theme.border}`,
         }}
       >
