@@ -120,8 +120,12 @@ export default function MenuPage() {
   /* =====================
      THEME (SINGLE SOURCE)
   ===================== */
+  const themeKey = business?.theme && THEMES[business.theme]
+  ? business.theme
+  : "dark";
 
-  const theme = THEMES[business?.theme ?? "dark"];
+  const theme = THEMES[themeKey];
+
 
   /* =====================
      SCROLL
@@ -137,13 +141,15 @@ export default function MenuPage() {
      RENDER
   ===================== */
 
+
+
   return (
     <div
       className={`min-h-screen transition-opacity duration-500 ${
         pageReady ? "opacity-100" : "opacity-0"
       }`}
       style={{
-        backgroundColor: theme.bg,
+        backgroundColor: theme.background,
         color: theme.text,
       }}
     >
@@ -161,7 +167,7 @@ export default function MenuPage() {
       <div
         className="sticky top-0 z-20 backdrop-blur"
         style={{
-          backgroundColor: theme.bg,
+          backgroundColor: theme.background,
           borderBottom: `1px solid ${theme.border}`,
         }}
       >
