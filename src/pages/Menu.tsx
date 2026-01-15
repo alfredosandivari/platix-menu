@@ -7,6 +7,14 @@ import { supabase } from "@/lib/supabaseClient";
 import { COPY } from "@/lib/copy";
 import { THEMES } from "@/lib/themes";
 import { getBusinessSlug } from "@/lib/domain";
+import {
+  MapPin,
+  Phone,
+  Clock,
+  Globe,
+  Instagram,
+} from "lucide-react";
+
 
 /* =====================
    TYPES
@@ -37,10 +45,13 @@ export default function MenuPage() {
     name: string;
     logo_url: string | null;
     theme: "dark" | "warm" | "light" | null;
-    phone: string | null;
-    address: string | null;
-    opening_hours: string | null;
+    phone?: string | null;
+    address?: string | null;
+    opening_hours?: string | null;
+    website_url?: string | null;
+    instagram_url?: string | null;
   } | null>(null);
+  
   
 
   const [categories, setCategories] = useState<MenuCategory[]>([]);
@@ -64,7 +75,7 @@ export default function MenuPage() {
 
     const { data: business } = await supabase
       .from("businesses")
-      .select("id, name, logo_url, theme, phone, address, opening_hours")
+      .select("id, name, logo_url, theme, phone, address, opening_hours, website_url, instagram_url")
       .eq("slug", slug)
       .single();
 
@@ -188,39 +199,89 @@ export default function MenuPage() {
           {COPY.en.product.tagline}
         </p>
 
-      {(business?.phone || business?.address || business?.opening_hours) && (
-        <div
-          className="mt-4 flex flex-col items-center gap-2 text-sm"
-          style={{ color: theme.mutedText }}
-        >
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-            {business.address && (
-              <span>📍 {business.address}</span>
-            )}
-            {business.phone && (
-              <span>📞 {business.phone}</span>
-            )}
-            {business.opening_hours && (
-              <span>⏰ {business.opening_hours}</span>
-            )}
-          </div>
+        {business?.phone && (
+  <a
+    href={`https://wa.me/${business.phone.replace(/\D/g, "")}`}
+    target="_blank"
+    rel="noreferrer"
+    className="mt-5 inline-flex items-center justify-center px-6 py-3 rounded-full text-base font-semibold transition-all hover:scale-[1.02]"
+    style={{
+      backgroundColor: theme.primary,
+      color: theme.bg,
+      boxShadow: "0 5px 10px rgba(0,0,0,0.25)",
+    }}
+  >
+    Reservas por WhatsApp
+  </a>
+)}
 
-          {business.phone && (
-            <a
-              href={`https://wa.me/${business.phone.replace(/\D/g, "")}?text=Hola,%20quisiera%20hacer%20una%20reserva`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-block rounded-full px-5 py-2 text-sm font-medium transition"
-              style={{
-                backgroundColor: theme.primary,
-                color: theme.bg,
-              }}
-            >
-              Reservas por WhatsApp
-            </a>
-          )}
+
+<div className="mt-4 flex flex-col items-center gap-2 text-sm text-center">
+  {/* Dirección + Teléfono */}
+  {(business?.address || business?.phone) && (
+    <div
+      className="flex flex-wrap items-center justify-center gap-4"
+      style={{ color: theme.mutedText }}
+    >
+      {business.address && (
+        <div className="flex items-center gap-1">
+          <MapPin className="w-4 h-4" />
+          <span>{business.address}</span>
         </div>
       )}
+
+      {business.phone && (
+        <div className="flex items-center gap-1">
+          <Phone className="w-4 h-4" />
+          <span>{business.phone}</span>
+        </div>
+      )}
+    </div>
+  )}
+
+  {/* Horario */}
+  {business?.opening_hours && (
+    <div
+      className="flex items-center gap-1"
+      style={{ color: theme.mutedText }}
+    >
+      <Clock className="w-4 h-4" />
+      <span>{business.opening_hours}</span>
+    </div>
+  )}
+
+  {/* Web + Instagram */}
+  {(business?.website_url || business?.instagram_url) && (
+    <div className="flex items-center gap-4 mt-1">
+      {business.website_url && (
+        <a
+          href={business.website_url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1 hover:underline"
+          style={{ color: theme.primary }}
+        >
+          <Globe className="w-4 h-4" />
+          <span>Sitio web</span>
+        </a>
+      )}
+
+      {business.instagram_url && (
+        <a
+          href={business.instagram_url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1 hover:underline"
+          style={{ color: theme.primary }}
+        >
+          <Instagram className="w-4 h-4" />
+          <span>Instagram</span>
+        </a>
+      )}
+    </div>
+  )}
+</div>
+
 
       </div>
 
