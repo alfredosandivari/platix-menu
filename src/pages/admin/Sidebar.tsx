@@ -2,7 +2,6 @@
 
 import { NavLink } from "react-router-dom";
 import { COPY } from "@/lib/copy";
-
 import {
   LayoutDashboard,
   List,
@@ -35,8 +34,8 @@ const navItems = [
 
 export default function Sidebar({ onNavigate }: SidebarProps) {
   return (
-    <aside className="h-full w-64 shrink-0 border-r border-border bg-background">
-      <nav className="p-4 space-y-2">
+    <aside className="h-screen w-64 shrink-0 border-r border-slate-200 bg-white">
+      <nav className="p-4 space-y-1">
         {navItems.map(({ label, to, icon: Icon }) => (
           <NavLink
             key={to}
@@ -46,8 +45,8 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-orange-50 text-orange-600"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               }`
             }
           >
