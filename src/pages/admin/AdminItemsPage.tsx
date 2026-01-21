@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { getBusinessSlug } from "@/lib/domain";
 import { uploadImageToCloudinary } from "@/utils/uploadImageToCloudinary";
 import { optimizeImage } from "@/utils/optimizeImage";
+import { getOptimizedImageUrl } from "@/utils/cloudinary";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,7 +113,7 @@ export default function AdminItemsPage() {
     setItems(itemsData ?? []);
 
   };
-  
+
 
   /* =====================
      CREATE
@@ -212,7 +213,7 @@ export default function AdminItemsPage() {
     if (editingId === item.id) cancelEdit();
     fetchData();
   };
-  
+
 
   /* =====================
      RENDER
@@ -330,18 +331,11 @@ export default function AdminItemsPage() {
               >
                 <div className="flex gap-4 items-start">
                   <div className="w-24 h-24 bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                  {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    className="w-full h-full object-cover"
-                  />
-                ) : businessLogo ? (
-                  <img
-                    src={businessLogo}
-                    alt="Business logo"
-                    className="h-10 opacity-60"
-                  />
-                ) : null}
+                    <img
+                      src={getOptimizedImageUrl(item.image_url) || "/placeholderimage.png"}
+                      alt={item.name}
+                      className="w-20 h-20 object-cover rounded-md border border-border"
+                    />
                   </div>
 
                   <div className="flex-1">
