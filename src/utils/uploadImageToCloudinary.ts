@@ -1,6 +1,7 @@
+// src/utils/uploadImageToCloudinary.ts
 export async function uploadImageToCloudinary(
   file: File,
-  slug: string
+  folder?: string
 ): Promise<string | null> {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -10,20 +11,14 @@ export async function uploadImageToCloudinary(
     return null;
   }
 
-  if (!slug) {
-    console.error("Slug de negocio no proporcionado");
-    return null;
-  }
-
-  // 📁 Estructura SaaS por cliente
-  const folder = `platix-saas/${slug}/menu`;
-
   const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", uploadPreset);
-  formData.append("folder", folder);
+  if (folder) {
+    formData.append("folder", folder);
+  }
 
   const res = await fetch(url, {
     method: "POST",
@@ -36,6 +31,5 @@ export async function uploadImageToCloudinary(
   }
 
   const data = await res.json();
-
-  return data.secure_url as string;
+  return data.public_id as string;
 }

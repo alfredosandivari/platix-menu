@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/lib/supabaseClient";
+import { getOptimizedImageUrl } from "@/utils/cloudinary";
 import { COPY } from "@/lib/copy";
 import { THEMES } from "@/lib/themes";
 import { getBusinessSlug } from "@/lib/domain";
@@ -350,7 +351,11 @@ export default function MenuPage() {
                   </CardHeader>
                   <CardContent>
                     <img
-                      src={item.image ?? business?.logo_url ?? ""}
+                      src={
+                        item.image
+                        ? getOptimizedImageUrl(item.image, 500)
+                        : "/placeholderimage.png"
+                      }
                       className="w-full h-48 object-cover rounded mb-4"
                     />
                     <p style={{ color: theme.mutedText }}>
@@ -388,7 +393,11 @@ export default function MenuPage() {
           >
             {selectedItem.image && (
               <img
-                src={selectedItem.image}
+              src={
+                selectedItem.image
+                ? getOptimizedImageUrl(selectedItem.image, 500)
+                : "/placeholderimage.png"
+              }
                 className="w-full h-64 object-cover"
               />
             )}
