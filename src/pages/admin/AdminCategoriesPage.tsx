@@ -165,17 +165,17 @@ export default function AdminCategoriesPage() {
   return (
     <div className="space-y-8 max-w-4xl">
       <h1 className="text-4xl font-serif text-gradient-gold">
-        Categorías actuales
+        Categories
       </h1>
 
       {/* ADD */}
       <div className="flex gap-4 max-w-md">
         <Input
-          placeholder="Nombre de la categoría"
+          placeholder="Category Name"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
         />
-        <Button onClick={handleAddCategory}>Agregar</Button>
+        <Button onClick={handleAddCategory}>Add +</Button>
       </div>
 
       {/* LIST */}

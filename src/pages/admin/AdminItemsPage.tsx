@@ -222,15 +222,15 @@ export default function AdminItemsPage() {
   return (
     <div className="space-y-10">
       <h1 className="text-4xl font-serif text-gradient-gold">
-        Administrar Productos
+        Manage Products
       </h1>
 
       {/* NUEVO PRODUCTO */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <h2 className="text-xl font-semibold">Nuevo producto</h2>
+        <h2 className="text-xl font-semibold">New Product</h2>
 
         <div>
-          <Label>Nombre</Label>
+          <Label>Product Name</Label>
           <Input
             value={form.name}
             onChange={(e) =>
@@ -240,7 +240,7 @@ export default function AdminItemsPage() {
         </div>
 
         <div>
-          <Label>Descripción</Label>
+          <Label>Description</Label>
           <Textarea
             value={form.description}
             onChange={(e) =>
@@ -251,7 +251,7 @@ export default function AdminItemsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label>Precio</Label>
+            <Label>Price</Label>
             <Input
               type="number"
               value={form.price}
@@ -262,7 +262,7 @@ export default function AdminItemsPage() {
           </div>
 
           <div>
-            <Label>Categoría</Label>
+            <Label>Category</Label>
             <Select
               value={form.categoryId}
               onValueChange={(v) =>
@@ -270,7 +270,7 @@ export default function AdminItemsPage() {
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona categoría" />
+                <SelectValue placeholder="Select a category..." />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
@@ -290,11 +290,11 @@ export default function AdminItemsPage() {
               setForm({ ...form, available: v })
             }
           />
-          <Label>Disponible</Label>
+          <Label>Available?</Label>
         </div>
 
         <div>
-          <Label>Imagen</Label>
+          <Label>Image</Label>
           <Input
             type="file"
             accept="image/*"

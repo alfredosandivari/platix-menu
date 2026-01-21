@@ -171,8 +171,7 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-3xl font-semibold">Dashboard</h1>
           <p className="text-muted-foreground">
-            Administración de{" "}
-            <span className="font-medium">{business?.name}</span>
+          <span className="font-medium">{business?.name}{" "}</span>
           </p>
         </div>
 
@@ -190,59 +189,59 @@ export default function AdminDashboard() {
 
 
       {loading ? (
-        <p className="text-muted-foreground">Cargando información...</p>
+        <p className="text-muted-foreground">Loading information...</p>
       ) : (
         <>
           {/* STATS */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Categorías</CardTitle>
+                <CardTitle>Categories</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-4xl font-bold">{stats.categories}</p>
                 <p className="text-sm text-muted-foreground">
-                  Categorías activas
+                  Active Categories
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Productos</CardTitle>
+                <CardTitle>Products</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-4xl font-bold">{stats.items}</p>
                 <p className="text-sm text-muted-foreground">
-                  Total productos
+                  Total products
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Sin imagen</CardTitle>
+                <CardTitle>Missing Images</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-4xl font-bold text-amber-500">
                   {stats.itemsWithoutImage}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Requieren imagen
+                  Image required
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>No disponibles</CardTitle>
+                <CardTitle>Unavailable</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-4xl font-bold text-red-500">
                   {stats.itemsUnavailable}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Fuera de carta
+                  Out of menu
                 </p>
               </CardContent>
             </Card>
@@ -251,12 +250,12 @@ export default function AdminDashboard() {
           {/* RECENT ITEMS */}
           <Card>
             <CardHeader>
-              <CardTitle>Últimos productos agregados</CardTitle>
+              <CardTitle>Last added products</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {recentItems.length === 0 ? (
                 <p className="text-muted-foreground">
-                  No hay productos recientes.
+                  There's no recents products
                 </p>
               ) : (
                 recentItems.map((item) => (
