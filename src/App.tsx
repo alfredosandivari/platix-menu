@@ -44,25 +44,20 @@ export default function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
 
-
-            {/* ADMIN (GUARDED) */}
-            <Route
-              path="/admin"
-              element={
-                <AdminGuard>
-                  <AdminLayout />
-                </AdminGuard>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="categories" element={<AdminCategoriesPage />} />
-              <Route path="items" element={<AdminItemsPage />} />
-              <Route path="settings" element={<AdminSettingsPage />} />
+            {/* 🔐 ADMIN GUARD */}
+            <Route element={<AdminGuard />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="categories" element={<AdminCategoriesPage />} />
+                <Route path="items" element={<AdminItemsPage />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
+              </Route>
             </Route>
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+
         </TooltipProvider>
       </QueryClientProvider>
     </BrowserRouter>
