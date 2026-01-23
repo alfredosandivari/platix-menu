@@ -1,10 +1,42 @@
-import { Outlet } from "react-router-dom";
-import { useState } from "react";
+import { Outlet, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 import Sidebar from "./Sidebar";
 
 export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  /* =====================
+     AUTH GUARD
+  ===================== */
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setAuthenticated(!!session);
+      setLoading(false);
+    };
+
+    checkSession();
+  }, []);
+
+  if (loading) {
+    return null; // o spinner si quieres
+  }
+
+  if (!authenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  /* =====================
+     LAYOUT
+  ===================== */
 
   return (
     <div className="min-h-screen flex bg-slate-50 text-slate-900">

@@ -14,6 +14,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 import AdminItemsPage from "./pages/admin/AdminItemsPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import LoginPage from "./pages/auth/LoginPage";
+import SignupPage from "./pages/auth/SignupPage";
+import OnboardingPage from "./pages/auth/OnboardingPage";
+import AdminGuard from "@/components/AdminGuard";
 
 const queryClient = new QueryClient();
 
@@ -36,8 +40,20 @@ export default function App() {
               }
             />
 
-            {/* ADMIN */}
-            <Route path="/admin" element={<AdminLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+
+
+            {/* ADMIN (GUARDED) */}
+            <Route
+              path="/admin"
+              element={
+                <AdminGuard>
+                  <AdminLayout />
+                </AdminGuard>
+              }
+            >
               <Route index element={<AdminDashboard />} />
               <Route path="categories" element={<AdminCategoriesPage />} />
               <Route path="items" element={<AdminItemsPage />} />
