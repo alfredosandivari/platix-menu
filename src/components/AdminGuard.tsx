@@ -3,54 +3,64 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function AdminGuard({ children }: { children: JSX.Element }) {
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [redirect, setRedirect] = useState<
+        null | "/login" | "/onboarding"
+    >(null);
 
-  useEffect(() => {
-    const checkAccess = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    useEffect(() => {
+        const check = async () => {
+            // 1. Usuario
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
 
-      // 1. No sesión → login
-      if (!user) {
-        setAuthorized(false);
-        setLoading(false);
-        return;
-      }
+            if (!user) {
+                setRedirect("/login");
+                setLoading(false);
+                return;
+            }
 
-      // 2. Ver si tiene business asociado
-      const { data: admin } = await supabase
-        .from("business_admins")
-        .select("business_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .single();
+            // 2. Business_admins
+            const { data: admin, error } = await supabase
+                .from("business_admins")
+                .select("business_id")
+                .eq("user_id", user.id)
+                .limit(1)
+                .single();
 
-      if (!admin) {
-        setNeedsOnboarding(true);
-        setLoading(false);
-        return;
-      }
+            if (error || !admin) {
+                setRedirect("/onboarding");
+                setLoading(false);
+                return;
+            }
 
-      // OK
-      setAuthorized(true);
-      setLoading(false);
-    };
+            // 3. Business existe
+            const { data: business } = await supabase
+                .from("businesses")
+                .select("id")
+                .eq("id", admin.business_id)
+                .single();
 
-    checkAccess();
-  }, []);
+            if (!business) {
+                setRedirect("/onboarding");
+                setLoading(false);
+                return;
+            }
 
-  if (loading) return null;
+            // OK
+            setRedirect(null);
+            setLoading(false);
+        };
 
-  if (!authorized && needsOnboarding) {
-    return <Navigate to="/onboarding" replace />;
-  }
+        check();
+    }, []);
 
-  if (!authorized) {
-    return <Navigate to="/login" replace />;
-  }
+    if (loading) return null;
 
-  return children;
+    if (redirect) {
+        return <Navigate to={redirect} replace />;
+    }
+
+    return children;
 }
