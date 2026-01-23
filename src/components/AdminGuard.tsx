@@ -1,75 +1,39 @@
-"use client";
-
-import { useEffect, useState } from "react";
+// AdminGuard.tsx
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { getBusinessSlug } from "@/lib/domain";
+import { useEffect, useState } from "react";
 
-export default function AdminGuard({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [status, setStatus] = useState<
-    "loading" | "unauthenticated" | "no-business" | "ready"
-  >("loading");
+export default function AdminGuard({ children }: { children: JSX.Element }) {
+  const [status, setStatus] = useState<"loading" | "ok" | "redirect">("loading");
 
   useEffect(() => {
     const check = async () => {
-      // 1️⃣ Auth
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: auth } = await supabase.auth.getUser();
 
-      if (!user) {
-        setStatus("unauthenticated");
+      if (!auth.user) {
+        setStatus("redirect");
         return;
       }
 
-      // 2️⃣ Business
-      const slug = getBusinessSlug();
-
-      if (!slug) {
-        setStatus("no-business");
-        return;
-      }
-
-      const { data: business } = await supabase
-        .from("businesses")
+      const { data: showAdmin } = await supabase
+        .from("business_admins")
         .select("id")
-        .eq("slug", slug)
-        .single();
+        .eq("user_id", auth.user.id)
+        .maybeSingle();
 
-      if (!business) {
-        setStatus("no-business");
+      if (!showAdmin) {
+        setStatus("redirect");
         return;
       }
 
-      setStatus("ready");
+      setStatus("ok");
     };
 
     check();
   }, []);
 
-  /* =====================
-     RENDER
-  ===================== */
+  if (status === "loading") return null;
+  if (status === "redirect") return <Navigate to="/onboarding" replace />;
 
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Loading…
-      </div>
-    );
-  }
-
-  if (status === "unauthenticated") {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (status === "no-business") {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  return <>{children}</>;
+  return children;
 }

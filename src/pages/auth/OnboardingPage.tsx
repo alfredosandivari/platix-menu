@@ -87,7 +87,7 @@ export default function OnboardingPage() {
       .insert({
         name: form.name,
         slug,
-        theme: "dark",
+        theme: "light",
       })
       .select()
       .single();
@@ -114,7 +114,6 @@ export default function OnboardingPage() {
       return;
     }
 
-    navigate("/admin");
   };
 
   /* =====================
@@ -139,7 +138,7 @@ export default function OnboardingPage() {
           <div className="space-y-1">
             <Label>Business name</Label>
             <Input
-              placeholder="Tío Jacinto"
+              placeholder="Pizza World"
               value={form.name}
               onChange={(e) => {
                 update("name", e.target.value);
@@ -151,7 +150,7 @@ export default function OnboardingPage() {
           <div className="space-y-1">
             <Label>Menu URL</Label>
             <Input
-              placeholder="tio-jacinto"
+              placeholder="pizzaworld"
               value={form.slug}
               onChange={(e) =>
                 update("slug", generateSlug(e.target.value))
