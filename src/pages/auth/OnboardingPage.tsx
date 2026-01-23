@@ -20,20 +20,33 @@ export default function OnboardingPage() {
   });
 
   /* =====================
-     LOAD USER
+     LOAD USER + GUARD
   ===================== */
 
   useEffect(() => {
-    const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
+    const init = async () => {
+      const { data: auth } = await supabase.auth.getUser();
+
+      if (!auth.user) {
         navigate("/login");
         return;
       }
-      setUserId(data.user.id);
+
+      setUserId(auth.user.id);
+
+      // 👉 Guard: si ya tiene negocio, fuera de onboarding
+      const { data: admin } = await supabase
+        .from("business_admins")
+        .select("id")
+        .eq("user_id", auth.user.id)
+        .maybeSingle();
+
+      if (admin) {
+        navigate("/admin");
+      }
     };
 
-    loadUser();
+    init();
   }, [navigate]);
 
   /* =====================
@@ -55,6 +68,8 @@ export default function OnboardingPage() {
   ===================== */
 
   const handleCreate = async () => {
+    if (!userId) return;
+
     setError(null);
 
     if (!form.name) {
@@ -66,17 +81,36 @@ export default function OnboardingPage() {
 
     setLoading(true);
 
-    const { error } = await supabase.from("businesses").insert({
-      name: form.name,
-      slug,
-      owner_id: userId,
-      theme: "dark",
-    });
+    // 1️⃣ Crear business
+    const { data: business, error: businessError } = await supabase
+      .from("businesses")
+      .insert({
+        name: form.name,
+        slug,
+        theme: "dark",
+      })
+      .select()
+      .single();
+
+    if (businessError) {
+      setLoading(false);
+      setError(businessError.message);
+      return;
+    }
+
+    // 2️⃣ Vincular usuario como owner
+    const { error: adminError } = await supabase
+      .from("business_admins")
+      .insert({
+        user_id: userId,
+        business_id: business.id,
+        role: "owner",
+      });
 
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (adminError) {
+      setError(adminError.message);
       return;
     }
 
@@ -119,12 +153,15 @@ export default function OnboardingPage() {
             <Input
               placeholder="tio-jacinto"
               value={form.slug}
-              onChange={(e) => update("slug", generateSlug(e.target.value))}
+              onChange={(e) =>
+                update("slug", generateSlug(e.target.value))
+              }
             />
             <p className="text-xs text-muted-foreground">
-              Your menu will be available at <br />
+              Your menu will be available at
+              <br />
               <span className="font-mono">
-                https://yourdomain.com/{form.slug || "your-business"}
+                https://{form.slug || "your-business"}.platix.app
               </span>
             </p>
           </div>
