@@ -1,39 +1,56 @@
-// AdminGuard.tsx
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { useEffect, useState } from "react";
 
 export default function AdminGuard({ children }: { children: JSX.Element }) {
-  const [status, setStatus] = useState<"loading" | "ok" | "redirect">("loading");
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
-    const check = async () => {
-      const { data: auth } = await supabase.auth.getUser();
+    const checkAccess = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (!auth.user) {
-        setStatus("redirect");
+      // 1. No sesión → login
+      if (!user) {
+        setAuthorized(false);
+        setLoading(false);
         return;
       }
 
-      const { data: showAdmin } = await supabase
+      // 2. Ver si tiene business asociado
+      const { data: admin } = await supabase
         .from("business_admins")
-        .select("id")
-        .eq("user_id", auth.user.id)
-        .maybeSingle();
+        .select("business_id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .single();
 
-      if (!showAdmin) {
-        setStatus("redirect");
+      if (!admin) {
+        setNeedsOnboarding(true);
+        setLoading(false);
         return;
       }
 
-      setStatus("ok");
+      // OK
+      setAuthorized(true);
+      setLoading(false);
     };
 
-    check();
+    checkAccess();
   }, []);
 
-  if (status === "loading") return null;
-  if (status === "redirect") return <Navigate to="/onboarding" replace />;
+  if (loading) return null;
+
+  if (!authorized && needsOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  if (!authorized) {
+    return <Navigate to="/login" replace />;
+  }
 
   return children;
 }
