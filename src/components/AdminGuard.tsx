@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { getBusinessSlug } from "@/lib/domain";
 
 export default function AdminGuard() {
   const [loading, setLoading] = useState(true);
@@ -9,7 +8,7 @@ export default function AdminGuard() {
 
   useEffect(() => {
     const run = async () => {
-      // 1️⃣ Session
+      // 1️⃣ Auth
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -23,29 +22,20 @@ export default function AdminGuard() {
       const user = session.user;
 
       // 2️⃣ Business admin
-      const { data: admin, error } = await supabase
+      const { data: admin } = await supabase
         .from("business_admins")
         .select("business_id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (error || !admin) {
+      if (!admin) {
         setRedirect("/onboarding");
         setLoading(false);
         return;
       }
 
-      // 3️⃣ Slug check (CRÍTICO)
-      const slug = getBusinessSlug();
-
-      if (!slug) {
-        // Estás en platix.app/admin → NO permitido
-        setRedirect("/onboarding");
-        setLoading(false);
-        return;
-      }
-
-      // ✅ Todo ok
+      // ✅ OK
+      setRedirect(null);
       setLoading(false);
     };
 

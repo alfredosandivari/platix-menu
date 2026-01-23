@@ -41,9 +41,6 @@ export default function OnboardingPage() {
         .eq("user_id", auth.user.id)
         .maybeSingle();
 
-      if (admin) {
-        navigate("/admin");
-      }
     };
 
     init();
