@@ -44,6 +44,9 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/onboarding`,
+      },
     });
 
     setLoading(false);
