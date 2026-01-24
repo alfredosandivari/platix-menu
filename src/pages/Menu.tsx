@@ -8,6 +8,7 @@ import { getOptimizedImageUrl } from "@/utils/cloudinary";
 import { COPY } from "@/lib/copy";
 import { THEMES } from "@/lib/themes";
 import { getBusinessSlug } from "@/lib/domain";
+import EmptyMenuState from "@/components/EmptyMenuState";
 import {
   MapPin,
   Phone,
@@ -180,6 +181,17 @@ export default function MenuPage() {
   ===================== */
 
 
+  if (!loading && categories.length === 0) {
+    return (
+      <div
+        className="min-h-screen"
+        style={{ backgroundColor: theme.bg, color: theme.text }}
+      >
+        <EmptyMenuState theme={theme} />
+      </div>
+    );
+  }
+  
 
   return (
     <div
@@ -214,6 +226,7 @@ export default function MenuPage() {
   >
     Reservas por WhatsApp
   </a>
+  
 )}
 
 
